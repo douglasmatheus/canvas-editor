@@ -177,7 +177,10 @@ export class ListParticle {
     } else {
       let text = ''
       let subCount = ''
-      const originalRowList = this.draw.getOriginalRowList()
+      const positionContext = this.draw.getPosition().getPositionContext()
+      const originalRowList = positionContext.isTable
+        ? this.draw.getTableRowList(this.draw.getOriginalElementList())
+        : this.draw.getOriginalRowList()
       const rowListOfList = originalRowList.filter((iRow) => {
         if (iRow.elementList.length > 0) {
           return iRow.elementList[0].listId === row.elementList[0].listId
