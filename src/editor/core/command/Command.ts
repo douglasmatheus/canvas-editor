@@ -13,6 +13,7 @@ export class Command {
   public executeSetPositionContext: CommandAdapt['setPositionContext']
   public executeForceUpdate: CommandAdapt['forceUpdate']
   public executeBlur: CommandAdapt['blur']
+  public executeHideCursor: CommandAdapt['hideCursor']
   public executeUndo: CommandAdapt['undo']
   public executeRedo: CommandAdapt['redo']
   public executePainter: CommandAdapt['painter']
@@ -69,6 +70,8 @@ export class Command {
   public executePrint: CommandAdapt['print']
   public executeReplaceImageElement: CommandAdapt['replaceImageElement']
   public executeSaveAsImageElement: CommandAdapt['saveAsImageElement']
+  public executeSetImageCrop: CommandAdapt['setImageCrop']
+  public executeSetImageCaption: CommandAdapt['setImageCaption']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
   public executePageMode: CommandAdapt['pageMode']
   public executePageScale: CommandAdapt['pageScale']
@@ -82,8 +85,10 @@ export class Command {
   public executeSetAreaBadge: CommandAdapt['setAreaBadge']
   public executeInsertElementList: CommandAdapt['insertElementList']
   public executeInsertArea: CommandAdapt['insertArea']
+  public executeSetAreaValue: CommandAdapt['setAreaValue']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
   public executeLocationArea: CommandAdapt['locationArea']
+  public executeClearGraffiti: CommandAdapt['clearGraffiti']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeDeleteElementById: CommandAdapt['deleteElementById']
@@ -107,6 +112,7 @@ export class Command {
   public executeSetControlHighlight: CommandAdapt['setControlHighlight']
   public executeLocationControl: CommandAdapt['locationControl']
   public executeInsertControl: CommandAdapt['insertControl']
+  public executeJumpControl: CommandAdapt['jumpControl']
   public executeUpdateOptions: CommandAdapt['updateOptions']
   public executeInsertTitle: CommandAdapt['insertTitle']
   public executeFocus: CommandAdapt['focus']
@@ -151,6 +157,7 @@ export class Command {
     this.executeSetPositionContext = adapt.setPositionContext.bind(adapt)
     this.executeForceUpdate = adapt.forceUpdate.bind(adapt)
     this.executeBlur = adapt.blur.bind(adapt)
+    this.executeHideCursor = adapt.hideCursor.bind(adapt)
     // 撤销、重做、格式刷、清除格式
     this.executeUndo = adapt.undo.bind(adapt)
     this.executeRedo = adapt.redo.bind(adapt)
@@ -214,6 +221,8 @@ export class Command {
     this.executePrint = adapt.print.bind(adapt)
     this.executeReplaceImageElement = adapt.replaceImageElement.bind(adapt)
     this.executeSaveAsImageElement = adapt.saveAsImageElement.bind(adapt)
+    this.executeSetImageCrop = adapt.setImageCrop.bind(adapt)
+    this.executeSetImageCaption = adapt.setImageCaption.bind(adapt)
     this.executeChangeImageDisplay = adapt.changeImageDisplay.bind(adapt)
     // 页面模式、页面缩放、纸张大小、纸张方向、页边距
     this.executePageMode = adapt.pageMode.bind(adapt)
@@ -230,8 +239,11 @@ export class Command {
     // 区域
     this.getAreaValue = adapt.getAreaValue.bind(adapt)
     this.executeInsertArea = adapt.insertArea.bind(adapt)
+    this.executeSetAreaValue = adapt.setAreaValue.bind(adapt)
     this.executeSetAreaProperties = adapt.setAreaProperties.bind(adapt)
     this.executeLocationArea = adapt.locationArea.bind(adapt)
+    // 涂鸦
+    this.executeClearGraffiti = adapt.clearGraffiti.bind(adapt)
     // 通用
     this.executeInsertElementList = adapt.insertElementList.bind(adapt)
     this.executeAppendElementList = adapt.appendElementList.bind(adapt)
@@ -290,5 +302,6 @@ export class Command {
     this.getControlList = adapt.getControlList.bind(adapt)
     this.executeLocationControl = adapt.locationControl.bind(adapt)
     this.executeInsertControl = adapt.insertControl.bind(adapt)
+    this.executeJumpControl = adapt.jumpControl.bind(adapt)
   }
 }

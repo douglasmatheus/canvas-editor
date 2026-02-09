@@ -28,3 +28,9 @@ export interface ISearchResultContext {
 export interface IReplaceOption {
   index?: number
 }
+
+export interface ISearchOption {
+  isRegEnable?: boolean
+  isIgnoreCase?: boolean
+  isLimitSelection?: boolean
+}

@@ -150,14 +150,19 @@ export class Position {
         const element = curRow.elementList[j]
         const metrics = element.metrics
         const offsetY =
-          (element.imgDisplay !== ImageDisplay.INLINE &&
+          !element.hide &&
+          ((element.imgDisplay !== ImageDisplay.INLINE &&
             element.type === ElementType.IMAGE) ||
-          element.type === ElementType.LATEX
+            element.type === ElementType.LATEX)
             ? curRow.ascent - metrics.height
             : curRow.ascent
-        // 偏移量
+        // 偏移量（内部计算使用）
         if (element.left) {
           x += element.left
+        }
+        // 偏移量（外部传入）
+        if (element.translateX) {
+          x += element.translateX * scale
         }
         const positionItem: IElementPosition = {
           pageNo,
@@ -214,7 +219,7 @@ export class Position {
         index++
         x += metrics.width
         // 计算表格内元素位置
-        if (element.type === ElementType.TABLE) {
+        if (element.type === ElementType.TABLE && !element.hide) {
           const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           const tdPaddingHeight = tdPadding[0] + tdPadding[2]
           for (let t = 0; t < element.trList!.length; t++) {
@@ -229,7 +234,10 @@ export class Position {
                 pageNo,
                 startRowIndex: 0,
                 startIndex: 0,
-                startX: (td.x! + tdPadding[3]) * scale + tablePreX,
+                startX:
+                  (td.x! + tdPadding[3]) * scale +
+                  tablePreX +
+                  (element.translateX || 0) * scale,
                 startY: (td.y! + tdPadding[0]) * scale + tablePreY,
                 innerWidth: (td.width! - tdPaddingWidth) * scale,
                 isTable: true,
@@ -295,7 +303,8 @@ export class Position {
     let startRowIndex = 0
     for (let i = 0; i < pageRowList.length; i++) {
       const rowList = pageRowList[i]
-      const startIndex = rowList[0]?.startIndex
+      if (!rowList?.length) continue
+      const startIndex = rowList[0].startIndex
       this.computePageRowPosition({
         positionList: this.positionList,
         rowList,
@@ -455,6 +464,14 @@ export class Position {
             isCheckbox: true
           }
         }
+        // 标签元素检测
+        if (element.type === ElementType.LABEL) {
+          return {
+            index: curPositionIndex,
+            isDirectHit: true,
+            isLabel: true
+          }
+        }
         if (
           element.type === ElementType.TAB &&
           element.listStyle === ListStyle.CHECKBOX
@@ -584,37 +601,40 @@ export class Position {
       }
     }
     if (!isLastArea) {
-      // 页眉底部距离页面顶部距离
-      const header = this.draw.getHeader()
-      const headerHeight = header.getHeight()
-      const headerBottomY = header.getHeaderTop() + headerHeight
-      // 页脚上部距离页面顶部距离
-      const footer = this.draw.getFooter()
-      const pageHeight = this.draw.getHeight()
-      const footerTopY =
-        pageHeight - (footer.getFooterBottom() + footer.getHeight())
-      // 判断所属位置是否属于页眉页脚区域
-      if (isMainActive) {
-        // 页眉：当前位置小于页眉底部位置
-        if (y < headerBottomY) {
-          return {
-            index: -1,
-            zone: EditorZone.HEADER
+      // 页眉页脚正文切换
+      if (this.draw.getIsPagingMode()) {
+        // 页眉底部距离页面顶部距离
+        const header = this.draw.getHeader()
+        const headerHeight = header.getHeight()
+        const headerBottomY = header.getHeaderTop() + headerHeight
+        // 页脚上部距离页面顶部距离
+        const footer = this.draw.getFooter()
+        const pageHeight = this.draw.getHeight()
+        const footerTopY =
+          pageHeight - (footer.getFooterBottom() + footer.getHeight())
+        // 判断所属位置是否属于页眉页脚区域
+        if (isMainActive) {
+          // 页眉：当前位置小于页眉底部位置
+          if (y < headerBottomY) {
+            return {
+              index: -1,
+              zone: EditorZone.HEADER
+            }
           }
-        }
-        // 页脚：当前位置大于页脚顶部位置
-        if (y > footerTopY) {
-          return {
-            index: -1,
-            zone: EditorZone.FOOTER
+          // 页脚：当前位置大于页脚顶部位置
+          if (y > footerTopY) {
+            return {
+              index: -1,
+              zone: EditorZone.FOOTER
+            }
           }
-        }
-      } else {
-        // main区域：当前位置小于页眉底部位置 && 大于页脚顶部位置
-        if (y <= footerTopY && y >= headerBottomY) {
-          return {
-            index: -1,
-            zone: EditorZone.MAIN
+        } else {
+          // main区域：当前位置小于页眉底部位置 && 大于页脚顶部位置
+          if (y <= footerTopY && y >= headerBottomY) {
+            return {
+              index: -1,
+              zone: EditorZone.MAIN
+            }
           }
         }
       }
@@ -769,6 +789,7 @@ export class Position {
       isRadio,
       isControl,
       isImage,
+      isLabel,
       isDirectHit,
       isTable,
       trIndex,
@@ -784,6 +805,7 @@ export class Position {
       isRadio: isRadio || false,
       isControl: isControl || false,
       isImage: isImage || false,
+      isLabel: isLabel || false,
       isDirectHit: isDirectHit || false,
       index,
       trIndex,

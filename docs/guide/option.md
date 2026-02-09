@@ -14,7 +14,7 @@ new Editor(container, IEditorData | IElement[], {
 
 ```typescript
 interface IEditorOption {
-  mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）、设计模式（不可删除、只读等配置不控制）。默认：编辑
+  mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）、设计模式（不可删除、只读等配置不控制）、涂鸦模式（屏蔽选区、允许长按移动绘制线条）。默认：编辑
   locale?: string // 多语言类型。默认：zhCN
   defaultType?: string // 默认元素类型。默认：TEXT
   defaultColor?: string // 默认字体颜色。默认：#000000
@@ -74,11 +74,16 @@ interface IEditorOption {
   zone?: IZoneOption // 编辑器区域配置。{tipDisabled?:boolean;}
   background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat; applyPageNumbers?:number[]}。默认：{color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // 换行符配置。{disabled?:boolean; color?:string; lineWidth?:number;}
+  whiteSpace?: IWhiteSpaceOption // 空格符配置。{disabled?:boolean; color?:string; radius?:number;}
   separator?: ISeparatorOption // 分隔符配置。{lineWidth?:number; strokeStyle?:string;}
   lineNumber?: ILineNumberOption // 行号配置。{size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
   pageBorder?: IPageBorderOption // 页面边框配置。{color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
   badge?: IBadgeOption // 徽章配置。{top?:number; left?:number}
-  modeRule?: IModeRule // 编辑器模式规则配置。{print:{imagePreviewerDisabled?: boolean}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
+  modeRule?: IModeRule // 编辑器模式规则配置。{print:{imagePreviewerDisabled?: boolean;backgroundDisabled?: boolean;}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
+  graffiti?: IGraffitiOption // 涂鸦模式配置。{defaultLineWidth?: number; defaultLineColor?: string}
+  label?: ILabelOption // 标签配置。{defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
+  imgCaption?: IImgCaptionOption // 图片题注配置。{color?:string; font?:string; size?:number; top?:number}
+  list?: IListOption // 列表配置。{inheritStyle?:boolean}
 }
 ```
 
@@ -89,6 +94,7 @@ interface ITableOption {
   tdPadding?: IPadding // 单元格内边距。默认：[0, 5, 5, 5]
   defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
   defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
+  overflow?: boolean // 是否允许表格超出正文区域。默认：true
 }
 ```
 
@@ -185,5 +191,24 @@ interface IPageBorderOption {
   lineWidth?: number // 宽度。默认：1
   padding?: IPadding // 距离正文内边距。默认：[0, 5, 0, 5]
   disabled?: boolean // 是否禁用。默认：true
+}
+```
+
+## 标签配置
+
+```typescript
+interface ILabelOption {
+  defaultColor?: string // 默认标签文本颜色
+  defaultBackgroundColor?: string // 默认标签背景颜色
+  defaultBorderRadius?: number // 默认标签边框半径
+  defaultPadding?: IPadding // 默认标签内边距
+}
+```
+
+## 列表配置
+
+```typescript
+interface IListOption {
+  inheritStyle?: boolean // 是否让列表序号继承文字样式。默认：false
 }
 ```

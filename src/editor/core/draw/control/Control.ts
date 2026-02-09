@@ -383,6 +383,43 @@ export class Control {
     return this.range.getRange()
   }
 
+  public getValueRange(context: IControlContext = {}): IRange | null {
+    const elementList = context.elementList || this.getElementList()
+    const { startIndex } = context.range || this.getRange()
+    const startElement = elementList[startIndex]
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (
+        preElement.controlId !== startElement.controlId ||
+        preElement.controlComponent === ControlComponent.PREFIX ||
+        preElement.controlComponent === ControlComponent.PRE_TEXT
+      ) {
+        break
+      }
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (
+        nextElement.controlId !== startElement.controlId ||
+        nextElement.controlComponent === ControlComponent.POSTFIX ||
+        nextElement.controlComponent === ControlComponent.POST_TEXT
+      ) {
+        break
+      }
+      nextIndex++
+    }
+    if (preIndex === nextIndex) return null
+    return {
+      startIndex: preIndex,
+      endIndex: nextIndex - 1
+    }
+  }
+
   public shrinkBoundary(context: IControlContext = {}) {
     this.range.shrinkBoundary(context)
   }
@@ -455,7 +492,8 @@ export class Control {
       // 弹窗类控件唤醒弹窗，后缀处移除弹窗
       if (
         this.activeControl instanceof SelectControl ||
-        this.activeControl instanceof DateControl
+        this.activeControl instanceof DateControl ||
+        this.activeControl instanceof NumberControl
       ) {
         if (element.controlComponent === ControlComponent.POSTFIX) {
           this.activeControl.destroy()
@@ -504,7 +542,9 @@ export class Control {
       this.activeControl = dateControl
       dateControl.awake()
     } else if (control.type === ControlType.NUMBER) {
-      this.activeControl = new NumberControl(element, this)
+      const numberControl = new NumberControl(element, this)
+      this.activeControl = numberControl
+      numberControl.awake()
     }
     // 缓存控件数据
     this.updateActiveControlValue()
@@ -520,7 +560,8 @@ export class Control {
     const { isEmitEvent = true } = options
     if (
       this.activeControl instanceof SelectControl ||
-      this.activeControl instanceof DateControl
+      this.activeControl instanceof DateControl ||
+      this.activeControl instanceof NumberControl
     ) {
       this.activeControl.destroy()
     }
@@ -609,12 +650,59 @@ export class Control {
     this.activeControl.setElement(element)
     if (
       (this.activeControl instanceof DateControl ||
-        this.activeControl instanceof SelectControl) &&
+        this.activeControl instanceof SelectControl ||
+        this.activeControl instanceof NumberControl) &&
       this.activeControl.getIsPopup()
     ) {
       this.activeControl.destroy()
       this.activeControl.awake()
     }
+  }
+
+  public selectValue(): boolean {
+    const elementList = this.getElementList()
+    const { startIndex } = this.getRange()
+    const startElement = elementList[startIndex]
+    if (
+      !startElement?.controlId ||
+      (startElement.controlComponent !== ControlComponent.VALUE &&
+        elementList[startIndex + 1]?.controlComponent ===
+          ControlComponent.VALUE)
+    ) {
+      return false
+    }
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (preElement.controlComponent !== ControlComponent.VALUE) break
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (nextElement.controlComponent !== ControlComponent.VALUE) {
+        nextIndex--
+        break
+      }
+      nextIndex++
+    }
+    if (preIndex !== nextIndex) {
+      const range = this.range.getRange()
+      this.range.replaceRange({
+        ...range,
+        startIndex: preIndex,
+        endIndex: nextIndex
+      })
+      this.draw.render({
+        isCompute: false,
+        isSetCursor: false,
+        isSubmitHistory: false
+      })
+      return true
+    }
+    return false
   }
 
   public moveCursor(position: IControlInitOption): IMoveCursorResult {
@@ -629,7 +717,7 @@ export class Control {
       element = elementList[index]
     }
     // 隐藏元素移动光标
-    if (element.control?.hide || element.area?.hide) {
+    if (element.hide || element.control?.hide || element.area?.hide) {
       const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
       return {
         newIndex: nonHideIndex,
@@ -713,6 +801,7 @@ export class Control {
     // 设计模式 || 元素隐藏 => 不验证删除权限
     if (
       !this.draw.isDesignMode() &&
+      !startElement?.hide &&
       !startElement?.control?.hide &&
       !startElement?.area?.hide
     ) {
@@ -873,9 +962,9 @@ export class Control {
   }
 
   public getValueById(payload: IGetControlValueOption): IGetControlValueResult {
-    const { id, conceptId, areaId } = payload
+    const { id, groupId, conceptId, areaId } = payload
     const result: IGetControlValueResult = []
-    if (!id && !conceptId) return result
+    if (!id && !conceptId && !groupId) return result
     const getValue = (elementList: IElement[], zone: EditorZone) => {
       let i = 0
       while (i < elementList.length) {
@@ -894,6 +983,7 @@ export class Control {
         }
         if (
           !element.control ||
+          (groupId && element.control.groupId !== groupId) ||
           (id && element.controlId !== id) ||
           (conceptId && element.control.conceptId !== conceptId) ||
           (areaId && element.areaId !== areaId)
@@ -997,12 +1087,13 @@ export class Control {
           }
         }
         if (!element.control) continue
-        // 获取设置值优先id、conceptId、areaId
+        // 获取设置值优先id、conceptId、areaId并于groupId组合设置
         const payloadItem = payload.find(
           p =>
-            (p.id && element.controlId === p.id) ||
-            (p.conceptId && element.control!.conceptId === p.conceptId) ||
-            (p.areaId && element.areaId === p.areaId)
+            (!p.groupId || p.groupId === element.control?.groupId) &&
+            ((p.id && element.controlId === p.id) ||
+              (p.conceptId && element.control!.conceptId === p.conceptId) ||
+              (p.areaId && element.areaId === p.areaId))
         )
         if (!payloadItem) continue
         const { value, isSubmitHistory = true } = payloadItem
@@ -1036,8 +1127,8 @@ export class Control {
           const formatValue = Array.isArray(value)
             ? value
             : value
-            ? [{ value }]
-            : []
+              ? [{ value }]
+              : []
           if (formatValue.length) {
             formatElementList(formatValue, {
               isHandleFirstElement: false,
@@ -1092,8 +1183,8 @@ export class Control {
           const formatValue = Array.isArray(value)
             ? value
             : value
-            ? [{ value }]
-            : []
+              ? [{ value }]
+              : []
           if (formatValue.length) {
             formatElementList(formatValue, {
               isHandleFirstElement: false,
@@ -1168,12 +1259,13 @@ export class Control {
           }
         }
         if (!element.control) continue
-        // 获取设置值优先id、conceptId、areaId
+        // 获取设置值优先id、conceptId、areaId并于groupId组合设置
         const payloadItem = payload.find(
           p =>
-            (p.id && element.controlId === p.id) ||
-            (p.conceptId && element.control!.conceptId === p.conceptId) ||
-            (p.areaId && element.areaId === p.areaId)
+            (!p.groupId || p.groupId === element.control?.groupId) &&
+            ((p.id && element.controlId === p.id) ||
+              (p.conceptId && element.control!.conceptId === p.conceptId) ||
+              (p.areaId && element.areaId === p.areaId))
         )
         if (!payloadItem) continue
         const { extension } = payloadItem
@@ -1227,12 +1319,13 @@ export class Control {
           }
         }
         if (!element.control) continue
-        // 获取设置值优先id、conceptId、areaId
+        // 获取设置值优先id、conceptId、areaId并于groupId组合设置
         const payloadItem = payload.find(
           p =>
-            (p.id && element.controlId === p.id) ||
-            (p.conceptId && element.control!.conceptId === p.conceptId) ||
-            (p.areaId && element.areaId === p.areaId)
+            (!p.groupId || p.groupId === element.control?.groupId) &&
+            ((p.id && element.controlId === p.id) ||
+              (p.conceptId && element.control!.conceptId === p.conceptId) ||
+              (p.areaId && element.areaId === p.areaId))
         )
         if (!payloadItem) continue
         const { properties, isSubmitHistory = true } = payloadItem
@@ -1276,13 +1369,14 @@ export class Control {
       footer: this.draw.getFooterElementList()
     }
     for (const key in pageComponentData) {
-      const elementList = pageComponentData[<keyof IEditorData>key]!
+      const elementList =
+        pageComponentData[<keyof Omit<IEditorData, 'graffiti'>>key]!
       setProperties(elementList)
     }
     if (!isExistUpdate) return
     // 强制更新
     for (const key in pageComponentData) {
-      const pageComponentKey = <keyof IEditorData>key
+      const pageComponentKey = <keyof Omit<IEditorData, 'graffiti'>>key
       const elementList = zipElementList(pageComponentData[pageComponentKey]!, {
         isClassifyArea: true,
         extraPickAttrs: ['id']
@@ -1605,11 +1699,6 @@ export class Control {
       isCompute: false,
       isSetCursor: true,
       isSubmitHistory: false
-    })
-    const positionList = position.getPositionList()
-    this.draw.getCursor().moveCursorToVisible({
-      cursorPosition: positionList[nextIndex],
-      direction
     })
   }
 

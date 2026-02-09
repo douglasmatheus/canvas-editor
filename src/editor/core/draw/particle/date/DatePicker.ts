@@ -4,6 +4,7 @@ import {
 } from '../../../../dataset/constant/Editor'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { IElementPosition } from '../../../../interface/Element'
+import { scrollIntoView } from '../../../../utils'
 import { Draw } from '../../Draw'
 
 export interface IDatePickerLang {
@@ -28,7 +29,7 @@ export interface IDatePickerLang {
 }
 
 export interface IDatePickerOption {
-  onSubmit?: (date: string) => any
+  onSubmit?: (date: string) => void
 }
 
 interface IDatePickerDom {
@@ -471,33 +472,9 @@ export class DatePicker {
       const pickDom = dom.querySelector<HTMLLIElement>(`[data-id='${time}']`)!
       pickDom.classList.add('active')
       if (isIntoView) {
-        this._scrollIntoView(dom, pickDom)
+        scrollIntoView(dom, pickDom)
       }
     })
-  }
-
-  private _scrollIntoView(container: HTMLElement, selected: HTMLElement) {
-    if (!selected) {
-      container.scrollTop = 0
-      return
-    }
-    const offsetParents: HTMLElement[] = []
-    let pointer = <HTMLElement>selected.offsetParent
-    while (pointer && container !== pointer && container.contains(pointer)) {
-      offsetParents.push(pointer)
-      pointer = <HTMLElement>pointer.offsetParent
-    }
-    const top =
-      selected.offsetTop +
-      offsetParents.reduce((prev, curr) => prev + curr.offsetTop, 0)
-    const bottom = top + selected.offsetHeight
-    const viewRectTop = container.scrollTop
-    const viewRectBottom = viewRectTop + container.clientHeight
-    if (top < viewRectTop) {
-      container.scrollTop = top
-    } else if (bottom > viewRectBottom) {
-      container.scrollTop = bottom - container.clientHeight
-    }
   }
 
   private _preMonth() {
@@ -541,15 +518,27 @@ export class DatePicker {
     }
   }
 
-  public formatDate(date: Date, format = 'yyyy-MM-dd hh:mm:ss'): string {
+  public formatDate(date: Date, format = 'YYYY-MM-DD HH:mm:ss'): string {
     let dateString = format
+    const year = date.getFullYear().toString()
+    const month = (date.getMonth() + 1).toString()
+    const day = date.getDate().toString()
+    const hours24 = date.getHours()
+    const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12
+    const minute = date.getMinutes().toString()
+    const second = date.getSeconds().toString()
+    const millisecond = date.getMilliseconds().toString()
     const dateOption = {
-      'y+': date.getFullYear().toString(),
-      'M+': (date.getMonth() + 1).toString(),
-      'd+': date.getDate().toString(),
-      'h+': date.getHours().toString(),
-      'm+': date.getMinutes().toString(),
-      's+': date.getSeconds().toString()
+      'y+': year,
+      'Y+': year,
+      'M+': month,
+      'd+': day,
+      'D+': day,
+      'h+': hours12.toString(),
+      'H+': hours24.toString(),
+      'm+': minute,
+      's+': second,
+      'S+': millisecond
     }
     for (const k in dateOption) {
       const reg = new RegExp('(' + k + ')').exec(format)

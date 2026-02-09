@@ -13,6 +13,8 @@ import { ICursorOption } from './Cursor'
 import { IFooter } from './Footer'
 import { IGroup } from './Group'
 import { IHeader } from './Header'
+import { ILabelOption } from './Label'
+import { IImgCaptionOption, IListOption } from './Element'
 import { ILineBreakOption } from './LineBreak'
 import { IMargin } from './Margin'
 import { IPageBreak } from './PageBreak'
@@ -29,11 +31,14 @@ import { IBadgeOption } from './Badge'
 import { IElement } from './Element'
 import { LocationPosition } from '../dataset/enum/Common'
 import { IRange } from './Range'
+import { IGraffitiData, IGraffitiOption } from './Graffiti'
+import { IWhiteSpaceOption } from './WhiteSpace'
 
 export interface IEditorData {
   header?: IElement[]
   main: IElement[]
   footer?: IElement[]
+  graffiti?: IGraffitiData[]
 }
 
 export interface IEditorOption {
@@ -97,11 +102,16 @@ export interface IEditorOption {
   zone?: IZoneOption
   background?: IBackgroundOption
   lineBreak?: ILineBreakOption
+  whiteSpace?: IWhiteSpaceOption
   separator?: ISeparatorOption
   lineNumber?: ILineNumberOption
   pageBorder?: IPageBorderOption
   badge?: IBadgeOption
   modeRule?: IModeRule
+  graffiti?: IGraffitiOption
+  label?: ILabelOption
+  imgCaption?: IImgCaptionOption
+  list?: IListOption
 }
 
 export interface IEditorResult {
@@ -144,6 +154,7 @@ export interface IFocusOption {
 
 export interface IPrintModeRule {
   imagePreviewerDisabled?: boolean
+  backgroundDisabled?: boolean
 }
 
 export interface IReadonlyModeRule {

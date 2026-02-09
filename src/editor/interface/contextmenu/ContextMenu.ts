@@ -28,7 +28,7 @@ export interface IRegisterContextMenu {
   shortCut?: string
   disable?: boolean
   when?: (payload: IContextMenuContext) => boolean
-  callback?: (command: Command, context: IContextMenuContext) => any
+  callback?: (command: Command, context: IContextMenuContext) => void
   childMenus?: IRegisterContextMenu[]
 }
 
@@ -55,6 +55,9 @@ export interface IContextmenuLang {
     textWrapType: {
       embed: string
       upDown: string
+      surround: string
+      floatTop: string
+      floatBottom: string
     }
   }
   table: {

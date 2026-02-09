@@ -6,7 +6,7 @@ import {
 } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { IElement } from '../../../../interface/Element'
-import { omitObject } from '../../../../utils'
+import { getUUID, omitObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { CanvasEvent } from '../../CanvasEvent'
 
@@ -50,8 +50,13 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   ) {
     enterText = omitObject(enterText, AREA_CONTEXT_ATTR)
   }
-  // 标题结尾处回车无需格式化及样式复制
+  // 标题开始 && 标题结尾处回车 => 无需格式化及样式复制
   if (
+    !(
+      elementList[startIndex + 1]?.titleId &&
+      (!startElement.titleId ||
+        startElement.titleId !== elementList[startIndex + 1]?.titleId)
+    ) &&
     !(
       endElement.titleId &&
       endElement.titleId !== elementList[endIndex + 1]?.titleId
@@ -87,6 +92,22 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     const { index } = cursorPosition
     if (isCollapsed) {
       draw.spliceElementList(elementList, index + 1, 0, [enterText])
+      // 如果在标题中间回车，为换行后的元素生成新的titleId
+      if (
+        endElement.titleId &&
+        elementList[index + 2]?.titleId === endElement.titleId
+      ) {
+        const newTitleId = getUUID()
+        // 循环处理换行符后面的标题元素
+        let nextIndex = index + 2
+        while (
+          nextIndex < elementList.length &&
+          elementList[nextIndex]?.titleId === endElement.titleId
+        ) {
+          elementList[nextIndex].titleId = newTitleId
+          nextIndex++
+        }
+      }
     } else {
       draw.spliceElementList(
         elementList,

@@ -52,6 +52,7 @@ import { SelectionObserver } from '../observer/SelectionObserver'
 import { TableParticle } from './particle/table/TableParticle'
 import { TableTool } from './particle/table/TableTool'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
+import { LabelParticle } from './particle/LabelParticle'
 import { Header } from './frame/Header'
 import { SuperscriptParticle } from './particle/SuperscriptParticle'
 import { SubscriptParticle } from './particle/SubscriptParticle'
@@ -103,8 +104,12 @@ import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
 import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
-import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
+import {
+  PUNCTUATION_REG,
+  WHITE_SPACE_REG
+} from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
+import { WhiteSpaceParticle } from './particle/WhiteSpaceParticle'
 import { MouseObserver } from '../observer/MouseObserver'
 import { LineNumber } from './frame/LineNumber'
 import { PageBorder } from './frame/PageBorder'
@@ -113,6 +118,7 @@ import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
 import { Badge } from './frame/Badge'
+import { Graffiti } from './graffiti/Graffiti'
 
 export class Draw {
   private container: HTMLDivElement
@@ -160,6 +166,7 @@ export class Draw {
   private header: Header
   private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
+  private labelParticle: LabelParticle
   private dateParticle: DateParticle
   private separatorParticle: SeparatorParticle
   private pageBreakParticle: PageBreakParticle
@@ -170,12 +177,14 @@ export class Draw {
   private blockParticle: BlockParticle
   private listParticle: ListParticle
   private lineBreakParticle: LineBreakParticle
+  private whiteSpaceParticle: WhiteSpaceParticle
   private control: Control
   private pageBorder: PageBorder
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
   private selectionObserver: SelectionObserver
   private imageObserver: ImageObserver
+  private graffiti: Graffiti
 
   private LETTER_REG: RegExp
   private WORD_LIKE_REG: RegExp
@@ -186,7 +195,7 @@ export class Draw {
   private visiblePageNoList: number[]
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
-  private printModeData: Required<IEditorData> | null
+  private printModeData: Required<Omit<IEditorData, 'graffiti'>> | null
 
   constructor(
     rootContainer: HTMLElement,
@@ -241,6 +250,7 @@ export class Draw {
     this.header = new Header(this, data.header)
     this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.labelParticle = new LabelParticle(this)
     this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle(this)
     this.pageBreakParticle = new PageBreakParticle(this)
@@ -251,8 +261,10 @@ export class Draw {
     this.blockParticle = new BlockParticle(this)
     this.listParticle = new ListParticle(this)
     this.lineBreakParticle = new LineBreakParticle(this)
+    this.whiteSpaceParticle = new WhiteSpaceParticle(this)
     this.control = new Control(this)
     this.pageBorder = new PageBorder(this)
+    this.graffiti = new Graffiti(this, data.graffiti)
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -302,7 +314,11 @@ export class Draw {
     }
     // 过滤控件辅助元素
     const clonePrintModeData = deepClone(this.printModeData)
-    const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
+    const editorDataKeys: (keyof Omit<IEditorData, 'graffiti'>)[] = [
+      'header',
+      'main',
+      'footer'
+    ]
     editorDataKeys.forEach(key => {
       clonePrintModeData[key] = this.control.filterAssistElement(
         clonePrintModeData[key]
@@ -356,6 +372,7 @@ export class Draw {
         return false
       case EditorMode.READONLY:
       case EditorMode.PRINT:
+      case EditorMode.GRAFFITI:
         return true
       case EditorMode.FORM:
         return !this.control.getIsRangeWithinControl()
@@ -394,6 +411,10 @@ export class Draw {
 
   public isPrintMode() {
     return this.mode === EditorMode.PRINT
+  }
+
+  public isGraffitiMode() {
+    return this.mode === EditorMode.GRAFFITI
   }
 
   public getOriginalWidth(): number {
@@ -824,6 +845,7 @@ export class Draw {
         while (deleteIndex >= start) {
           const deleteElement = elementList[deleteIndex]
           if (
+            deleteElement?.hide ||
             deleteElement?.control?.hide ||
             deleteElement?.area?.hide ||
             (tdDeletable !== false &&
@@ -938,6 +960,10 @@ export class Draw {
 
   public getI18n(): I18n {
     return this.i18n
+  }
+
+  public getGraffiti(): Graffiti {
+    return this.graffiti
   }
 
   public getRowCount(): number {
@@ -1173,7 +1199,8 @@ export class Draw {
     const data: Required<IEditorData> = {
       header: this.getHeaderElementList(),
       main: mainElementList,
-      footer: this.getFooterElementList()
+      footer: this.getFooterElementList(),
+      graffiti: this.graffiti.getValue()
     }
     return data
   }
@@ -1191,7 +1218,8 @@ export class Draw {
       }),
       footer: zipElementList(originData.footer, {
         extraPickAttrs
-      })
+      }),
+      graffiti: originData.graffiti
     }
     return {
       version,
@@ -1234,7 +1262,7 @@ export class Draw {
     })
   }
 
-  public setEditorData(payload: Partial<IEditorData>) {
+  public setEditorData(payload: Partial<Omit<IEditorData, 'graffiti'>>) {
     const { header, main, footer } = payload
     if (header) {
       this.header.setElementList(header)
@@ -1314,10 +1342,25 @@ export class Draw {
   }
 
   public getElementRowMargin(el: IElement) {
-    const { defaultBasicRowMarginHeight, defaultRowMargin, scale } =
-      this.options
+    const {
+      defaultSize,
+      defaultBasicRowMarginHeight,
+      defaultRowMargin,
+      scale
+    } = this.options
+    // 字体在12-30之间，行间距不变，小于12按比例缩小，大于30按比例放大
+    const fontSize = el.size || defaultSize
+    let ratio = 1
+    if (fontSize < 12) {
+      ratio = fontSize / 12
+    } else if (fontSize > 30) {
+      ratio = 1 + (fontSize - 30) / 30
+    }
     return (
-      defaultBasicRowMarginHeight * (el.rowMargin ?? defaultRowMargin) * scale
+      defaultBasicRowMarginHeight *
+      ratio *
+      (el.rowMargin ?? defaultRowMargin) *
+      scale
     )
   }
 
@@ -1335,8 +1378,8 @@ export class Draw {
     } = payload
     const {
       defaultSize,
-      defaultRowMargin,
       scale,
+      imgCaption,
       table: { tdPadding, defaultTrMinHeight },
       defaultTabWidth
     } = this.options
@@ -1369,8 +1412,7 @@ export class Draw {
     for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
-      const rowMargin =
-        defaultBasicRowMarginHeight * (element.rowMargin ?? defaultRowMargin)
+      const rowMargin = this.getElementRowMargin(element)
       const metrics: IElementMetrics = {
         width: 0,
         height: 0,
@@ -1388,12 +1430,14 @@ export class Draw {
       x += isStartElement ? offsetX : 0
       y += isStartElement ? curRow.offsetY || 0 : 0
       if (
-        (element.control?.hide || element.area?.hide) &&
+        (element.hide || element.control?.hide || element.area?.hide) &&
         !this.isDesignMode()
       ) {
+        const preElement = curRow.elementList[curRow.elementList.length - 1]
         metrics.height =
-          curRow.elementList[curRow.elementList.length - 1]?.metrics.height ||
-          this.options.defaultSize * scale
+          preElement?.metrics.height || this.options.defaultSize * scale
+        metrics.boundingBoxAscent = preElement?.metrics.boundingBoxAscent || 0
+        metrics.boundingBoxDescent = preElement?.metrics.boundingBoxDescent || 0
       } else if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
@@ -1424,8 +1468,14 @@ export class Draw {
             metrics.height = elementHeight
             metrics.boundingBoxDescent = elementHeight
           }
+          // 增加题注高度
+          if (element.imgCaption?.value) {
+            const fontSize = element.imgCaption.size || imgCaption.size
+            const captionTop = element.imgCaption.top ?? imgCaption.top
+            const captionHeight = (fontSize + captionTop) * scale
+            metrics.boundingBoxAscent += captionHeight
+          }
         }
-        metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.TABLE) {
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
         const tdPaddingHeight = tdPadding[0] + tdPadding[2]
@@ -1569,11 +1619,13 @@ export class Draw {
             }
           }
           // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
+          // 前面元素为换页符时重新计算高度
           const rowMarginHeight = rowMargin * 2 * scale
           const firstTrHeight = element.trList![0].height! * scale
           if (
             curPagePreHeight + firstTrHeight + rowMarginHeight > height ||
-            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
+            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat) ||
+            elementList[i - 1]?.type === ElementType.PAGE_BREAK
           ) {
             // 无可拆分行则切换至新页
             curPagePreHeight = marginHeight
@@ -1669,8 +1721,9 @@ export class Draw {
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const {
-          separator: { lineWidth }
+          separator: { lineWidth: defaultLineWidth }
         } = this.options
+        const lineWidth = element.lineWidth || defaultLineWidth
         element.width = availableWidth / scale
         metrics.width = availableWidth
         metrics.height = lineWidth * scale
@@ -1702,7 +1755,8 @@ export class Draw {
         metrics.width = defaultTabWidth * scale
         metrics.height = defaultSize * scale
         metrics.boundingBoxDescent = 0
-        metrics.boundingBoxAscent = metrics.height
+        metrics.boundingBoxAscent =
+          this.textParticle.getBasisWordBoundingBoxAscent(ctx, ctx.font)
       } else if (element.type === ElementType.BLOCK) {
         if (!element.width) {
           metrics.width = availableWidth
@@ -1713,6 +1767,19 @@ export class Draw {
         metrics.height = element.height! * scale
         metrics.boundingBoxDescent = metrics.height
         metrics.boundingBoxAscent = 0
+      } else if (element.type === ElementType.LABEL) {
+        const {
+          defaultSize,
+          label: { defaultPadding }
+        } = this.options
+        ctx.font = this.getElementFont(element)
+        const fontMetrics = this.textParticle.measureText(ctx, element)
+        metrics.width =
+          (fontMetrics.width + defaultPadding[1] + defaultPadding[3]) * scale
+        metrics.height = (element.size || defaultSize) * scale
+        metrics.boundingBoxDescent = 0
+        metrics.boundingBoxAscent =
+          (defaultPadding[0] + fontMetrics.actualBoundingBoxAscent) * scale
       } else {
         // 设置上下标真实字体尺寸
         const size = element.size || defaultSize
@@ -1729,12 +1796,14 @@ export class Draw {
         if (element.letterSpacing) {
           metrics.width += element.letterSpacing * scale
         }
-        metrics.boundingBoxAscent =
-          (element.value === ZERO
-            ? element.size || defaultSize
-            : fontMetrics.actualBoundingBoxAscent) * scale
+        // 使用基于字体的基准度量以确保一致的行高，避免字符特定度量导致的布局跳动
+        const basisMetrics = this.textParticle.measureBasisWord(
+          ctx,
+          element.font!
+        )
+        metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
         metrics.boundingBoxDescent =
-          fontMetrics.actualBoundingBoxDescent * scale
+          basisMetrics.actualBoundingBoxDescent * scale
         if (element.type === ElementType.SUPERSCRIPT) {
           metrics.boundingBoxAscent += metrics.height / 2
         } else if (element.type === ElementType.SUBSCRIPT) {
@@ -1742,9 +1811,10 @@ export class Draw {
         }
       }
       const ascent =
-        (element.imgDisplay !== ImageDisplay.INLINE &&
+        !element.hide &&
+        ((element.imgDisplay !== ImageDisplay.INLINE &&
           element.type === ElementType.IMAGE) ||
-        element.type === ElementType.LATEX
+          element.type === ElementType.LATEX)
           ? metrics.height + rowMargin
           : metrics.boundingBoxAscent + rowMargin
       const height =
@@ -1791,9 +1861,9 @@ export class Draw {
               elementList,
               i
             )
-            // 单词宽度大于行可用宽度，无需折行
+            // 后面存在元素 && 单词宽度大于行可用宽度，无需折行
             const wordWidth = width * scale
-            if (wordWidth <= availableWidth) {
+            if (endElement && wordWidth <= availableWidth) {
               curRowWidth += wordWidth
               nextElement = endElement
             }
@@ -2089,7 +2159,8 @@ export class Draw {
       scale,
       table: { tdPadding },
       group,
-      lineBreak
+      lineBreak,
+      whiteSpace
     } = this.options
     const {
       rowList,
@@ -2098,9 +2169,11 @@ export class Draw {
       positionList,
       startIndex,
       zone,
-      isDrawLineBreak = !lineBreak.disabled
+      isDrawLineBreak = !lineBreak.disabled,
+      isDrawWhiteSpace = !whiteSpace.disabled
     } = payload
-    const isPrintMode = this.mode === EditorMode.PRINT
+    const isPrintMode = this.isPrintMode()
+    const isGraffitiMode = this.isGraffitiMode()
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
@@ -2126,7 +2199,7 @@ export class Draw {
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
         if (
-          (element.control?.hide || element.area?.hide) &&
+          (element.hide || element.control?.hide || element.area?.hide) &&
           !this.isDesignMode()
         ) {
           // 控件隐藏时不绘制
@@ -2154,6 +2227,9 @@ export class Draw {
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.LABEL) {
+          this.textParticle.complete()
+          this.labelParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
           const nextElement = curRow.elementList[j + 1]
           // 释放之前的
@@ -2213,7 +2289,7 @@ export class Draw {
           this.textParticle.complete()
         } else if (element.type === ElementType.BLOCK) {
           this.textParticle.complete()
-          this.blockParticle.render(pageNo, element, x, y + offsetY)
+          this.blockParticle.render(ctx, pageNo, element, x, y + offsetY)
         } else {
           // 如果当前元素设置左偏移，则上一元素立即绘制
           if (element.left) {
@@ -2238,6 +2314,10 @@ export class Draw {
           j === curRow.elementList.length - 1
         ) {
           this.lineBreakParticle.render(ctx, element, x, y + curRow.height / 2)
+        }
+        // 空白符绘制
+        if (isDrawWhiteSpace && WHITE_SPACE_REG.test(element.value)) {
+          this.whiteSpaceParticle.render(ctx, element, x, y + curRow.height / 2)
         }
         // 边框绘制（目前仅支持控件）
         if (element.control?.border) {
@@ -2380,7 +2460,7 @@ export class Draw {
         }
         index++
         // 绘制表格内元素
-        if (element.type === ElementType.TABLE) {
+        if (element.type === ElementType.TABLE && !element.hide) {
           const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           for (let t = 0; t < element.trList!.length; t++) {
             const tr = element.trList![t]
@@ -2416,7 +2496,7 @@ export class Draw {
       // 绘制批注样式
       this.group.render(ctx)
       // 绘制选区
-      if (!isPrintMode) {
+      if (!isPrintMode && !isGraffitiMode) {
         if (rangeRecord.width && rangeRecord.height) {
           const { x, y, width, height } = rangeRecord
           this.range.render(ctx, x, y, width, height)
@@ -2496,7 +2576,12 @@ export class Draw {
     ctx.globalAlpha = !this.zone.isMainActive() ? inactiveAlpha : 1
     this._clearPage(pageNo)
     // 绘制背景
-    this.background.render(ctx, pageNo)
+    if (
+      !isPrintMode ||
+      !this.options.modeRule[EditorMode.PRINT]?.backgroundDisabled
+    ) {
+      this.background.render(ctx, pageNo)
+    }
     // 绘制区域
     if (!isPrintMode) {
       this.area.render(ctx, pageNo)
@@ -2566,6 +2651,10 @@ export class Draw {
     }
     // 绘制签章
     this.badge.render(ctx, pageNo)
+    // 绘制涂鸦
+    if (this.isGraffitiMode()) {
+      this.graffiti.render(ctx, pageNo)
+    }
   }
 
   private _disconnectLazyRender() {
@@ -2662,7 +2751,7 @@ export class Draw {
       this.position.computePositionList()
       // 区域信息
       this.area.compute()
-      if (this.mode !== EditorMode.PRINT) {
+      if (!this.isPrintMode()) {
         // 搜索信息
         const searchKeyword = this.search.getSearchKeyword()
         if (searchKeyword) {
@@ -2670,6 +2759,10 @@ export class Draw {
         }
         // 控件关键词高亮
         this.control.computeHighlightList()
+      }
+      // 涂鸦信息
+      if (this.isGraffitiMode()) {
+        this.graffiti.compute()
       }
     }
     // 清除光标等副作用

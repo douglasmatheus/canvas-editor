@@ -6,7 +6,7 @@ import { IRange } from '../../../interface/Range'
 import { CanvasEvent } from '../CanvasEvent'
 
 // 通过分词器获取单词所在选区
-function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
+export function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
   if (!Intl.Segmenter) return null
   const draw = host.getDraw()
   const cursorPosition = draw.getPosition().getCursorPosition()
@@ -26,8 +26,11 @@ function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
       )
       .join('') || ''
   if (!paragraphText) return null
-  // 光标所在位置
-  const cursorStartIndex = cursorPosition.index
+  // 光标所在位置：光标在开头时只能选择选择当前行进行分词，光标后移
+  const cursorStartIndex =
+    cursorPosition.isFirstLetter || draw.getCursor().getHitLineStartIndex()
+      ? cursorPosition.index + 1
+      : cursorPosition.index
   // 段落首字符相对文档起始位置
   const offset = paragraphInfo.startIndex
   const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' })
@@ -51,7 +54,7 @@ function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
 }
 
 // 通过光标位置获取单词所在选区
-function getWordRangeByCursor(host: CanvasEvent): IRange | null {
+export function getWordRangeByCursor(host: CanvasEvent): IRange | null {
   const draw = host.getDraw()
   const cursorPosition = draw.getPosition().getCursorPosition()
   if (!cursorPosition) return null
@@ -108,8 +111,19 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     x: evt.offsetX,
     y: evt.offsetY
   })
-  // 图片预览
   if (positionContext.isImage && positionContext.isDirectHit) {
+    // 双击图片事件
+    const elementList = draw.getElementList()
+    const eventBus = draw.getEventBus()
+    const curElement = elementList[positionContext.index]
+    if (eventBus.isSubscribe('imageDblclick')) {
+      eventBus.emit('imageDblclick', {
+        evt,
+        element: curElement
+      })
+    }
+    // 图片预览
+    if (curElement.imgPreviewDisabled) return
     draw.getPreviewer().render()
     return
   }
@@ -149,6 +163,10 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
 
 function threeClick(host: CanvasEvent) {
   const draw = host.getDraw()
+  // 优先选择控件内容
+  const control = draw.getControl()
+  if (control.getActiveControl() && control.selectValue()) return
+  // 选择整个段落
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return

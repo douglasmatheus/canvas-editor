@@ -17,9 +17,9 @@ import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class TextControl implements IControlInstance {
-  private element: IElement
-  private control: Control
-  private options: DeepRequired<IEditorOption>
+  protected element: IElement
+  protected control: Control
+  protected options: DeepRequired<IEditorOption>
 
   constructor(element: IElement, control: Control) {
     const draw = control.getDraw()
@@ -150,7 +150,8 @@ export class TextControl implements IControlInstance {
       return -1
     }
     const elementList = context.elementList || this.control.getElementList()
-    const range = context.range || this.control.getRange()
+    const range =
+      context.range || this.control.getValueRange() || this.control.getRange()
     const { startIndex, endIndex } = range
     this.control
       .getDraw()
@@ -163,7 +164,10 @@ export class TextControl implements IControlInstance {
           isIgnoreDeletedRule: options.isIgnoreDeletedRule
         }
       )
-    const value = this.getValue(context)
+    const value = this.getValue({
+      range,
+      elementList
+    })
     if (!value.length) {
       this.control.addPlaceholder(startIndex, context)
     }

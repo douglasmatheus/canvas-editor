@@ -1,4 +1,5 @@
 import './assets/css/index.css'
+import { version } from '../../package.json'
 import { IEditorData, IEditorOption, IEditorResult } from './interface/Editor'
 import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
@@ -72,9 +73,11 @@ import { AreaMode } from './dataset/enum/Area'
 import { IBadge } from './interface/Badge'
 import { WatermarkType } from './dataset/enum/Watermark'
 import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
+import { IGraffitiData } from './interface/Graffiti'
 
 export default class Editor {
   public command: Command
+  public version: string
   public listener: Listener
   public eventBus: EventBus<EventBusMap>
   public override: Override
@@ -94,12 +97,14 @@ export default class Editor {
     let headerElementList: IElement[] = []
     let mainElementList: IElement[] = []
     let footerElementList: IElement[] = []
+    let graffitiData: IGraffitiData[] = []
     if (Array.isArray(data)) {
       mainElementList = data
     } else {
       headerElementList = data.header || []
       mainElementList = data.main
       footerElementList = data.footer || []
+      graffitiData = data.graffiti || []
     }
     const pageComponentData = [
       headerElementList,
@@ -112,6 +117,8 @@ export default class Editor {
         isForceCompensation: true
       })
     })
+    // 版本
+    this.version = version
     // 监听
     this.listener = new Listener()
     // 事件
@@ -125,7 +132,8 @@ export default class Editor {
       {
         header: headerElementList,
         main: mainElementList,
-        footer: footerElementList
+        footer: footerElementList,
+        graffiti: graffitiData
       },
       this.listener,
       this.eventBus,
@@ -148,6 +156,7 @@ export default class Editor {
       draw.destroy()
       shortcut.removeEvent()
       contextMenu.removeEvent()
+      this.eventBus.dangerouslyClearAll()
     }
     // 插件
     const plugin = new Plugin(this)

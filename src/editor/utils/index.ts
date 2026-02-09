@@ -42,14 +42,14 @@ export function deepCloneOmitKeys<T, K>(obj: T, omitKeys: (keyof K)[]): T {
   if (!obj || typeof obj !== 'object') {
     return obj
   }
-  let newObj: any = {}
+  let newObj = {} as T
   if (Array.isArray(obj)) {
-    newObj = obj.map(item => deepCloneOmitKeys(item, omitKeys))
+    newObj = obj.map(item => deepCloneOmitKeys(item, omitKeys)) as T
   } else {
     // prettier-ignore
-    (Object.keys(obj) as (keyof K)[]).forEach(key => {
-      if (omitKeys.includes(key)) return
-      return (newObj[key] = deepCloneOmitKeys((obj[key as unknown as keyof T] ), omitKeys))
+    (Object.keys(obj) as (keyof T)[]).forEach(key => {
+      if (omitKeys.includes(key as unknown as keyof K)) return
+      newObj[key] = deepCloneOmitKeys(obj[key] , omitKeys)
     })
   }
   return newObj
@@ -62,13 +62,13 @@ export function deepClone<T>(obj: T): T {
   if (!obj || typeof obj !== 'object') {
     return obj
   }
-  let newObj: any = {}
+  let newObj = {} as T
   if (Array.isArray(obj)) {
-    newObj = obj.map(item => deepClone(item))
+    newObj = obj.map(item => deepClone(item)) as T
   } else {
     // prettier-ignore
     (Object.keys(obj) as (keyof T)[]).forEach(key => {
-      return (newObj[key] = deepClone(obj[key]))
+      newObj[key] = deepClone(obj[key])
     })
   }
   return newObj
@@ -150,14 +150,14 @@ export function downloadFile(href: string, fileName: string) {
   a.click()
 }
 
-export function threeClick(dom: HTMLElement, fn: (evt: MouseEvent) => any) {
+export function threeClick(dom: HTMLElement, fn: (evt: MouseEvent) => void) {
   nClickEvent(3, dom, fn)
 }
 
 function nClickEvent(
   n: number,
   dom: HTMLElement,
-  fn: (evt: MouseEvent) => any
+  fn: (evt: MouseEvent) => void
 ) {
   let count = 0
   let lastTime = 0
@@ -278,6 +278,15 @@ export function cloneProperty<T>(
   }
 }
 
+export function deleteProperty<T>(sourceKeys: T[], deleteKeys: T[]) {
+  if (!deleteKeys.length || !sourceKeys.length) return
+  for (let i = sourceKeys.length - 1; i >= 0; i--) {
+    if (deleteKeys.includes(sourceKeys[i])) {
+      sourceKeys.splice(i, 1)
+    }
+  }
+}
+
 export function pickObject<T>(object: T, pickKeys: (keyof T)[]): T {
   const newObject: T = <T>{}
   for (const key in object) {
@@ -368,4 +377,69 @@ export function isNonValue(value: unknown): boolean {
 
 export function normalizeLineBreak(text: string): string {
   return text.replace(/\r\n|\r/g, '\n')
+}
+
+// 支持正则的indexOf
+export function indexOf(
+  source: string,
+  search: string | RegExp,
+  fromIndex = 0
+): { index: number; length: number } {
+  const start = Math.max(0, Math.floor(fromIndex))
+
+  if (start >= source.length) {
+    if (typeof search === 'string' && search === '') {
+      return { index: source.length, length: 0 }
+    }
+    return { index: -1, length: 0 }
+  }
+
+  // 关键词匹配
+  if (typeof search === 'string') {
+    if (search === '') {
+      return { index: start, length: 0 }
+    }
+    const index = source.indexOf(search, start)
+    return index === -1
+      ? { index: -1, length: 0 }
+      : { index, length: search.length }
+  }
+
+  // 确保正则包含 "g" 才可以设置 lastIndex，从而从任意位置开始搜索
+  const originalFlags = search.flags
+  const flags = originalFlags.includes('g')
+    ? originalFlags
+    : originalFlags + 'g'
+  const re = new RegExp(search.source, flags)
+  re.lastIndex = start
+  const match = re.exec(source)
+  if (!match) {
+    return { index: -1, length: 0 }
+  }
+  return { index: match.index, length: match[0].length }
+}
+
+// 滚动到可视视野范围
+export function scrollIntoView(container: HTMLElement, selected: HTMLElement) {
+  if (!selected) {
+    container.scrollTop = 0
+    return
+  }
+  const offsetParents: HTMLElement[] = []
+  let pointer = <HTMLElement>selected.offsetParent
+  while (pointer && container !== pointer && container.contains(pointer)) {
+    offsetParents.push(pointer)
+    pointer = <HTMLElement>pointer.offsetParent
+  }
+  const top =
+    selected.offsetTop +
+    offsetParents.reduce((prev, curr) => prev + curr.offsetTop, 0)
+  const bottom = top + selected.offsetHeight
+  const viewRectTop = container.scrollTop
+  const viewRectBottom = viewRectTop + container.clientHeight
+  if (top < viewRectTop) {
+    container.scrollTop = top
+  } else if (bottom > viewRectBottom) {
+    container.scrollTop = bottom - container.clientHeight
+  }
 }

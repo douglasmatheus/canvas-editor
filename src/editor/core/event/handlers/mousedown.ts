@@ -63,7 +63,7 @@ export function hitRadio(element: IElement, draw: Draw) {
 
 export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
+  let isReadonly = draw.isReadonly()
   const rangeManager = draw.getRange()
   const position = draw.getPosition()
   // 存在选区时忽略右键点击
@@ -107,6 +107,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     isCheckbox,
     isRadio,
     isImage,
+    isLabel,
     isTable,
     tdValueIndex,
     hitLineStartIndex
@@ -126,6 +127,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const isDirectHitImage = !!(isDirectHit && isImage)
   const isDirectHitCheckbox = !!(isDirectHit && isCheckbox)
   const isDirectHitRadio = !!(isDirectHit && isRadio)
+  const isDirectHitLabel = !!(isDirectHit && isLabel)
   if (~index) {
     let startIndex = curIndex
     let endIndex = curIndex
@@ -145,6 +147,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     }
     rangeManager.setRange(startIndex, endIndex)
     position.setCursorPosition(positionList[curIndex])
+    // 更新只读状态
+    isReadonly = draw.isReadonly()
     // 复选框
     if (isDirectHitCheckbox && !isReadonly) {
       hitCheckbox(curElement, draw)
@@ -184,6 +188,14 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       })
     }
   }
+  // 标签点击事件
+    const eventBus = draw.getEventBus()
+  if (isDirectHitLabel && eventBus.isSubscribe('labelMousedown')) {
+    eventBus.emit('labelMousedown', {
+      evt,
+      element: curElement
+    })
+  }
   // 预览工具组件
   const previewer = draw.getPreviewer()
   previewer.clearResizer()
@@ -218,7 +230,6 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       draw.getImageParticle().createFloatImage(curElement)
     }
     // 图片点击事件
-    const eventBus = draw.getEventBus()
     if (eventBus.isSubscribe('imageMousedown')) {
       eventBus.emit('imageMousedown', {
         evt,

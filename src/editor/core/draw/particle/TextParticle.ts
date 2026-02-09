@@ -10,7 +10,7 @@ import { Draw } from '../Draw'
 
 export interface IMeasureWordResult {
   width: number
-  endElement: IElement
+  endElement: IElement | null
 }
 
 export class TextParticle {
@@ -56,7 +56,7 @@ export class TextParticle {
   ): IMeasureWordResult {
     const LETTER_REG = this.draw.getLetterReg()
     let width = 0
-    let endElement: IElement = elementList[curIndex]
+    let endElement: IElement | null = null
     let i = curIndex
     while (i < elementList.length) {
       const element = elementList[i]
@@ -81,6 +81,7 @@ export class TextParticle {
     element: IElement
   ): number {
     if (!element || !PUNCTUATION_LIST.includes(element.value)) return 0
+    ctx.font = this.draw.getElementFont(element)
     return this.measureText(ctx, element).width
   }
 
@@ -110,6 +111,13 @@ export class TextParticle {
     const textMetrics = ctx.measureText(element.value)
     this.cacheMeasureText.set(id, textMetrics)
     return textMetrics
+  }
+
+  public getBasisWordBoundingBoxAscent(
+    ctx: CanvasRenderingContext2D,
+    font: string
+  ): number {
+    return this.measureBasisWord(ctx, font).actualBoundingBoxAscent
   }
 
   public complete() {

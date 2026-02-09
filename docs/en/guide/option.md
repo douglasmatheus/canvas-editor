@@ -74,11 +74,16 @@ interface IEditorOption {
   zone?: IZoneOption // Zone option。{tipDisabled?:boolean;}
   background?: IBackgroundOption // Background option. {color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat; applyPageNumbers?:number[]}。default: {color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // LineBreak option. {disabled?:boolean; color?:string; lineWidth?:number;}
+  whiteSpace?: IWhiteSpaceOption // WhiteSpace option. {disabled?:boolean; color?:string; radius?:number;}
   separator?: ISeparatorOption // Separator option. {lineWidth?:number; strokeStyle?:string;}
   lineNumber?: ILineNumberOption // LineNumber option. {size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
   pageBorder?: IPageBorderOption // PageBorder option. {color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
   badge?: IBadgeOption // Badge option. {top?:number; left?:number}
-  modeRule?: IModeRule // mode rule option. {print:{imagePreviewerDisabled?: boolean}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
+  modeRule?: IModeRule // mode rule option. {print:{imagePreviewerDisabled?: boolean; backgroundDisabled?: boolean;}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
+  graffiti?: IGraffitiOption // graffiti mode option. {defaultLineWidth?: number; defaultLineColor?: string}
+  label?: ILabelOption // Label option. {defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
+  imgCaption?: IImgCaptionOption // Image caption option. {color?:string; font?:string; size?:number; top?:number}
+  list?: IListOption // List option. {inheritStyle?:boolean}
 }
 ```
 
@@ -89,6 +94,7 @@ interface ITableOption {
   tdPadding?: IPadding // Cell padding. default: [0, 5, 5, 5]
   defaultTrMinHeight?: number // Default table row minimum height. default: 42
   defaultColMinWidth?: number // Default minimum width for table columns (applied if the overall width is sufficient, otherwise
+  overflow?: boolean // Is it allowed for the table to exceed the main body. Default: true
 }
 ```
 
@@ -185,5 +191,24 @@ interface IPageBorderOption {
   lineWidth?: number // line width. default: 1
   padding?: IPadding // padding. default: [0, 0, 0, 0]
   disabled?: boolean //  Whether to disable. default: true
+}
+```
+
+## Label Configuration
+
+```typescript
+interface ILabelOption {
+  defaultColor?: string // Default label text color
+  defaultBackgroundColor?: string // Default label background color
+  defaultBorderRadius?: number // Default label border radius
+  defaultPadding?: IPadding // Default label padding
+}
+```
+
+## List Configuration
+
+```typescript
+interface IListOption {
+  inheritStyle?: boolean // Whether to let the list number inherit the text style. default: false
 }
 ```

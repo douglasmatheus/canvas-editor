@@ -418,6 +418,24 @@ elementList.push(
   ])
 )
 
+// 模拟Label标签
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '诊断标签：'
+    },
+    {
+      type: ElementType.LABEL,
+      value: '高血压',
+      labelId: 'l1',
+      size: 14
+    },
+    {
+      value: '\n'
+    }
+  ])
+)
+
 // 模拟固定长度下划线
 elementList.push(
   ...[
@@ -436,6 +454,29 @@ elementList.push(
         postfix: '\u200c',
         minWidth: 160,
         underline: true
+      }
+    }
+  ]
+)
+
+elementList.push(
+  ...[
+    {
+      value: '\n就诊次数：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        conceptId: '7',
+        type: ControlType.NUMBER,
+        value: null,
+        placeholder: '就诊次数',
+        prefix: '{',
+        postfix: '}',
+        numberExclusiveOptions: {
+          calculatorDisabled: false
+        }
       }
     }
   ]

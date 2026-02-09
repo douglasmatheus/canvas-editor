@@ -7,11 +7,13 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import {
   IReplaceOption,
+  ISearchOption,
   ISearchResult,
   ISearchResultRestArgs
 } from '../../../interface/Search'
-import { getUUID, isNumber } from '../../../utils'
+import { getUUID, indexOf, isNumber } from '../../../utils'
 import { Position } from '../../position/Position'
+import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
 
 export interface INavigateInfo {
@@ -23,15 +25,19 @@ export class Search {
   private draw: Draw
   private options: Required<IEditorOption>
   private position: Position
+  private range: RangeManager
   private searchKeyword: string | null
   private searchNavigateIndex: number | null
+  private searchOptions: ISearchOption | null
   private searchMatchList: ISearchResult[]
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
     this.position = draw.getPosition()
+    this.range = draw.getRange()
     this.searchNavigateIndex = null
+    this.searchOptions = null
     this.searchKeyword = null
     this.searchMatchList = []
   }
@@ -40,9 +46,10 @@ export class Search {
     return this.searchKeyword
   }
 
-  public setSearchKeyword(payload: string | null) {
+  public setSearchKeyword(payload: string | null, options?: ISearchOption) {
     this.searchKeyword = payload
     this.searchNavigateIndex = null
+    this.searchOptions = options || null
   }
 
   public searchNavigatePre(): number | null {
@@ -161,7 +168,9 @@ export class Search {
     payload: string,
     originalElementList: IElement[]
   ): ISearchResult[] {
-    const keyword = payload.toLocaleLowerCase()
+    const { isRegEnable = false, isIgnoreCase = true } =
+      this.searchOptions || {}
+    const keyword = isIgnoreCase ? payload.toLocaleLowerCase() : payload
     const searchMatchList: ISearchResult[] = []
     // 分组
     const elementListGroup: {
@@ -211,11 +220,13 @@ export class Search {
       restArgs?: ISearchResultRestArgs
     ) {
       if (!payload) return
-      const text = elementList
+      let text = elementList
         .map(e =>
           !e.type ||
           (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
             e.controlComponent !== ControlComponent.CHECKBOX &&
+            e.controlComponent !== ControlComponent.RADIO &&
+            !e.hide &&
             !e.control?.hide &&
             !e.area?.hide)
             ? e.value
@@ -223,17 +234,27 @@ export class Search {
         )
         .filter(Boolean)
         .join('')
-        .toLocaleLowerCase()
-      const matchStartIndexList = []
-      let index = text.indexOf(payload)
-      while (index !== -1) {
-        matchStartIndexList.push(index)
-        index = text.indexOf(payload, index + payload.length)
+      if (isIgnoreCase) {
+        text = text.toLocaleLowerCase()
       }
-      for (let m = 0; m < matchStartIndexList.length; m++) {
-        const startIndex = matchStartIndexList[m]
+      // 匹配的结果列表
+      const matchList: { index: number; length: number }[] = []
+      // 从索引0开始依次匹配
+      const searchStr = isRegEnable ? new RegExp(payload) : payload
+      let { index, length } = indexOf(text, searchStr)
+      while (index !== -1 && length !== 0) {
+        matchList.push({
+          index,
+          length
+        })
+        const matchResult = indexOf(text, searchStr, index + length)
+        index = matchResult.index
+        length = matchResult.length
+      }
+      for (let m = 0; m < matchList.length; m++) {
+        const { index: startIndex, length: matchLength } = matchList[m]
         const groupId = getUUID()
-        for (let i = 0; i < payload.length; i++) {
+        for (let i = 0; i < matchLength; i++) {
           const index = startIndex + i + (restArgs?.startIndex || 0)
           searchMatchList.push({
             type,
@@ -272,10 +293,26 @@ export class Search {
   }
 
   public compute(payload: string) {
-    this.searchMatchList = this.getMatchList(
-      payload,
-      this.draw.getOriginalElementList()
-    )
+    const isPickSelectionElementList =
+      this.searchOptions?.isLimitSelection && !this.range.getIsCollapsed()
+    // 搜索元素范围（默认全部 || 设置搜索选中区域）
+    const searchElementList = isPickSelectionElementList
+      ? this.range.getSelectionElementList()
+      : this.draw.getOriginalElementList()
+    if (!searchElementList?.length) return
+    this.searchMatchList = this.getMatchList(payload, searchElementList)
+    // 根据选区位置index/tableIndex往后移动
+    if (!isPickSelectionElementList || !this.searchMatchList.length) return
+    const { startIndex } = this.range.getRange()
+    // getSelectionElementList实际返回的元素列表为选区位置之后的元素列表，所以需要+1
+    const offset = startIndex + 1
+    for (const searchMatch of this.searchMatchList) {
+      if (searchMatch.type === EditorContext.TABLE) {
+        searchMatch.tableIndex! += offset
+      } else {
+        searchMatch.index += offset
+      }
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
