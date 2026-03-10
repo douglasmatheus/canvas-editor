@@ -56,6 +56,10 @@ export class BaseBlock {
     return this.element.width || this.element.metrics.width
   }
 
+  public getIFrameBlock(): IFrameBlock | null {
+    return this.block instanceof IFrameBlock ? this.block : null
+  }
+
   private _createBlockItem() {
     const { scale, resizerColor } = this.options
     const blockItem = document.createElement('div')
@@ -114,14 +118,14 @@ export class BaseBlock {
         i === 0 || i === 6 || i === 7
           ? -handleSize
           : i === 1 || i === 5
-          ? width / 2
-          : width - handleSize
+            ? width / 2
+            : width - handleSize
       const top =
         i === 0 || i === 1 || i === 2
           ? -handleSize
           : i === 3 || i === 7
-          ? height / 2 - handleSize
-          : height - handleSize
+            ? height / 2 - handleSize
+            : height - handleSize
       this.resizerHandleList[i].style.transform = `scale(${scale})`
       this.resizerHandleList[i].style.left = `${left}px`
       this.resizerHandleList[i].style.top = `${top}px`
@@ -233,7 +237,12 @@ export class BaseBlock {
     evt.preventDefault()
   }
 
-  public snapshot(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  public snapshot(
+    ctx: CanvasRenderingContext2D,
+    pageNo: number,
+    x: number,
+    y: number
+  ) {
     const block = this.element.block!
     if (block.type === BlockType.VIDEO) {
       this.blockItem.style.display = 'none'
@@ -246,6 +255,9 @@ export class BaseBlock {
         this.draw.getImageObserver().add(promise)
         this.blockCache.set(this.element.id!, this.block)
       }
+    } else if (block.type === BlockType.IFRAME) {
+      // 更新坐标，默认是打印模式时没有默认坐标
+      this.setClientRects(pageNo, x, y)
     }
   }
 
@@ -272,6 +284,13 @@ export class BaseBlock {
     // 位置
     this.blockItem.style.left = `${x}px`
     this.blockItem.style.top = `${preY + y}px`
+  }
+
+  public setStatus() {
+    // iframe 更新只读状态
+    if (this.block instanceof IFrameBlock) {
+      this.block.setReadonly(this.draw.isReadonly())
+    }
   }
 
   public remove() {
