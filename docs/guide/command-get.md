@@ -180,6 +180,16 @@ const [top: number, right: number, bottom: number, left: number] =
   instance.command.getPaperMargin()
 ```
 
+## getColumns
+
+功能：获取当前分栏配置。未开启分栏时返回 `null`。
+
+用法：
+
+```javascript
+const columns: IColumnOption | null = instance.command.getColumns()
+```
+
 ## getSearchNavigateInfo
 
 功能：获取搜索导航信息
@@ -251,30 +261,7 @@ const locale = await instance.command.getLocale()
 const groupIds = await instance.command.getGroupIds()
 ```
 
-## getControlValue
-
-功能：获取控件值
-
-用法：
-
-```javascript
-const {
-  value: string | null
-  innerText: string | null
-  zone: EditorZone
-  elementList?: IElement[]
-}[] = await instance.command.getControlValue(payload: IGetControlValueOption)
-```
-
-## getControlList
-
-功能：获取所有控件
-
-用法：
-
-```javascript
-const controlList = await instance.command.getControlList()
-```
+控件相关命令已迁移至[控件-方法](./control/command.md)。
 
 ## getContainer
 

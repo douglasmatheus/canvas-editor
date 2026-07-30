@@ -84,6 +84,11 @@ interface IEditorOption {
   label?: ILabelOption // Label configuration
   imgCaption?: IImgCaptionOption // Image caption configuration
   list?: IListOption // List configuration
+  magnifier?: IMagnifierOption // Magnifier configuration
+  accessibility?: IAccessibilityOption // Accessibility configuration
+  column?: IColumnOption // Column configuration. default: disabled
+  trace?: ITraceOption // Trace configuration. default: disabled
+  ruler?: IRulerOption // Ruler configuration. default: disabled
 }
 ```
 
@@ -94,7 +99,7 @@ interface ITableOption {
   tdPadding?: IPadding // Cell padding. default: [0, 5, 5, 5]
   defaultTrMinHeight?: number // Default table row minimum height. default: 42
   defaultColMinWidth?: number // Default minimum width for table columns (applied if the overall width is sufficient, otherwise
-  overflow?: boolean // Is it allowed for the table to exceed the main body. Default: true
+  overflow?: boolean // Is it allowed for the table to exceed the main body. When false, the total table width is proportionally shrunk to fit the page content area during layout (column width is not less than defaultColMinWidth). Default: false
 }
 ```
 
@@ -107,6 +112,7 @@ interface IHeader {
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
   editable?: boolean // Disable the header content from being edited
+  disabledPages?: number[] // Page numbers (0-based) on which the header is not displayed. default: []
 }
 ```
 
@@ -119,6 +125,7 @@ interface IFooter {
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
   editable?: boolean // Disable the footer content from being edited
+  disabledPages?: number[] // Page numbers (0-based) on which the footer is not displayed. default: []
 }
 ```
 
@@ -155,6 +162,7 @@ interface IWatermark {
   repeat?: boolean // repeat watermark. default: false
   gap?: [horizontal: number, vertical: number] // watermark spacing. default: [10,10]
   numberType?: NumberType // The numeric type. default: ARABIC
+  layer?: WatermarkLayer // watermark layer. default: bottom
 }
 ```
 
@@ -172,6 +180,7 @@ interface IControlOption {
   disabledBackgroundColor?: string // Background color when disabled
   existValueBackgroundColor?: string // Background color when has value
   noValueBackgroundColor?: string // Background color when no value
+  errorBackgroundColor?: string // Background color for failed validation. default: #FFECE8
 }
 ```
 
@@ -355,6 +364,8 @@ interface IModeRule {
   print?: {
     imagePreviewerDisabled?: boolean // Disable image previewer in print mode
     backgroundDisabled?: boolean // Disable background in print mode
+    filterEmptyControl?: boolean // Filter empty controls in print mode. default: true
+    areaHideDisabled?: boolean // Ignore area's hide config in print mode, force display the area and its content. default: false
   }
   readonly?: {
     imagePreviewerDisabled?: boolean // Disable image previewer in readonly mode
@@ -401,5 +412,57 @@ interface IImgCaptionOption {
 ```typescript
 interface IListOption {
   inheritStyle?: boolean // Whether to let the list number inherit the text style. default: false
+}
+```
+
+## Magnifier Configuration
+
+```typescript
+interface IMagnifierOption {
+  disabled?: boolean // Whether to disable. default: true
+  size?: number // Magnifier diameter. default: 120
+  zoom?: number // Magnification. default: 2
+  borderColor?: string // Border color. default: #efefef
+}
+```
+
+## Accessibility Configuration
+
+```typescript
+interface IAccessibilityOption {
+  disabled?: boolean // Whether to disable accessibility support. default: true
+}
+```
+
+## Column Configuration
+
+```typescript
+interface IColumnOption {
+  count?: number // Number of columns. count<=1 disables columns. default: 1
+  gap?: number // Gap between columns in pixels. default: 20
+  separator?: boolean // Whether to draw separator lines between columns. default: false
+  separatorColor?: string // Separator line color. default: #000000
+  separatorWidth?: number // Separator line width. default: 1
+}
+```
+
+## Trace Configuration
+
+```typescript
+interface ITraceOption {
+  disabled?: boolean // Whether to disable trace recording initially. default: true
+  insertColor?: string // Color of the underline for inserted traces. default: #2B5CE6
+  deleteColor?: string // Color of the strikeout for deleted traces. default: #E03F3F
+  author?: string // Author identifier for trace records. default: ''
+  lineWidth?: number // Trace line width. default: 2
+}
+```
+
+## Ruler Configuration
+
+```typescript
+interface IRulerOption {
+  disabled?: boolean // Whether to disable the ruler initially. default: true
+  height?: number // Ruler height. default: 26
 }
 ```

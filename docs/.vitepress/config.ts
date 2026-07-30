@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   base: '/canvas-editor-docs/',
   title: 'canvas-editor',
-  description: 'rich text editor by canvas/svg',
+  description: 'A Canvas/SVG-based rich text editor',
   themeConfig: {
     i18nRouting: false,
     algolia: {
@@ -76,6 +76,19 @@ export default defineConfig({
       {
         text: '重写方法',
         items: [{ text: '重写方法', link: '/guide/override' }]
+      },
+      {
+        text: '控件',
+        items: [
+          { text: '配置', link: '/guide/control/option' },
+          { text: '方法', link: '/guide/control/command' },
+          { text: '级联表达式', link: '/guide/control/cascade' },
+          { text: '验证', link: '/guide/control/validate' }
+        ]
+      },
+      {
+        text: '宏',
+        items: [{ text: '宏(Macro)', link: '/guide/macro' }]
       },
       {
         text: 'API',
@@ -178,6 +191,19 @@ export default defineConfig({
           {
             text: 'Override',
             items: [{ text: 'override', link: '/en/guide/override' }]
+          },
+          {
+            text: 'Control',
+            items: [
+              { text: 'option', link: '/en/guide/control/option' },
+              { text: 'command', link: '/en/guide/control/command' },
+              { text: 'cascade', link: '/en/guide/control/cascade' },
+              { text: 'validate', link: '/en/guide/control/validate' }
+            ]
+          },
+          {
+            text: 'Macro',
+            items: [{ text: 'macro', link: '/en/guide/macro' }]
           },
           {
             text: 'Api',

@@ -84,6 +84,11 @@ interface IEditorOption {
   label?: ILabelOption // 标签配置
   imgCaption?: IImgCaptionOption // 图片题注配置
   list?: IListOption // 列表配置
+  magnifier?: IMagnifierOption // 放大镜配置
+  accessibility?: IAccessibilityOption // 无障碍配置
+  column?: IColumnOption // 分栏配置。默认：关闭
+  trace?: ITraceOption // 留痕配置。默认：禁用
+  ruler?: IRulerOption // 标尺配置。默认：禁用
 }
 ```
 
@@ -94,7 +99,7 @@ interface ITableOption {
   tdPadding?: IPadding // 单元格内边距。默认：[0, 5, 5, 5]
   defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
   defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
-  overflow?: boolean // 是否允许表格超出正文区域。默认：true
+  overflow?: boolean // 是否允许表格超出正文区域。为 false 时表格总宽在布局阶段会被等比例压缩至页面内容区内（列宽不低于 defaultColMinWidth）。默认：false
 }
 ```
 
@@ -107,6 +112,7 @@ interface IHeader {
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
   editable?: boolean // 禁止编辑标题内容
+  disabledPages?: number[] // 不显示页眉的页码（从 0 开始）。默认：[]
 }
 ```
 
@@ -119,6 +125,7 @@ interface IFooter {
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
   editable?: boolean // 禁止编辑页脚内容
+  disabledPages?: number[] // 不显示页脚的页码（从 0 开始）。默认：[]
 }
 ```
 
@@ -155,6 +162,7 @@ interface IWatermark {
   repeat?: boolean // 重复水印。默认：false
   gap?: [horizontal: number, vertical: number] // 水印间距。默认：[10,10]
   numberType: NumberType.ARABIC // 页码格式。默认：{pageNo}。示例：第{pageNo}页/共{pageCount}页
+  layer?: WatermarkLayer // 水印层级。默认：bottom
 }
 ```
 
@@ -172,6 +180,7 @@ interface IControlOption {
   disabledBackgroundColor?: string // 禁用时背景色
   existValueBackgroundColor?: string // 有值时背景色
   noValueBackgroundColor?: string // 无值时背景色
+  errorBackgroundColor?: string // 校验失败背景色。默认：#FFECE8
 }
 ```
 
@@ -355,6 +364,8 @@ interface IModeRule {
   print?: {
     imagePreviewerDisabled?: boolean // 打印模式禁用图片预览
     backgroundDisabled?: boolean // 打印模式禁用背景
+    filterEmptyControl?: boolean // 打印模式过滤无值控件。默认：true
+    areaHideDisabled?: boolean // 打印模式忽略 area 的 hide 配置，强制显示区域及其内容。默认：false
   }
   readonly?: {
     imagePreviewerDisabled?: boolean // 只读模式禁用图片预览
@@ -401,5 +412,57 @@ interface IImgCaptionOption {
 ```typescript
 interface IListOption {
   inheritStyle?: boolean // 是否让列表序号继承文字样式。默认：false
+}
+```
+
+## 放大镜配置
+
+```typescript
+interface IMagnifierOption {
+  disabled?: boolean // 是否禁用。默认：true
+  size?: number // 放大镜直径。默认：120
+  zoom?: number // 放大倍率。默认：2
+  borderColor?: string // 边框颜色。默认：#efefef
+}
+```
+
+## 无障碍配置
+
+```typescript
+interface IAccessibilityOption {
+  disabled?: boolean // 是否禁用无障碍支持。默认：true
+}
+```
+
+## 分栏配置
+
+```typescript
+interface IColumnOption {
+  count?: number // 栏数。count<=1 视为关闭分栏。默认：1
+  gap?: number // 栏间距（像素）。默认：20
+  separator?: boolean // 是否显示栏间分隔线。默认：false
+  separatorColor?: string // 分隔线颜色。默认：#000000
+  separatorWidth?: number // 分隔线宽度。默认：1
+}
+```
+
+## 留痕配置
+
+```typescript
+interface ITraceOption {
+  disabled?: boolean // 初始是否禁用留痕记录。默认：true
+  insertColor?: string // 新增痕迹下划线颜色。默认：#2B5CE6
+  deleteColor?: string // 删除痕迹中划线颜色。默认：#E03F3F
+  author?: string // 留痕记录作者标识。默认：''
+  lineWidth?: number // 留痕线条宽度。默认：2
+}
+```
+
+## 标尺配置
+
+```typescript
+interface IRulerOption {
+  disabled?: boolean // 初始是否禁用标尺。默认：true
+  height?: number // 标尺高度。默认：26
 }
 ```

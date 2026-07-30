@@ -19,16 +19,47 @@ import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
   <button class="bold"></button>
 </div>
 ```
+
 :::
 
 ## executeMode
 
-Feature: Switch editor mode (Edit, Clean, Read only)
+Feature: Switch editor mode (Edit, Clean, Read only, Form, Print, Design, Graffiti, Trace)
 
 Usage:
 
 ```javascript
 instance.command.executeMode(editorMode: EditorMode)
+```
+
+## executeToggleTrace
+
+Feature: Toggle trace recording.
+
+Usage:
+
+```javascript
+instance.command.executeToggleTrace(payload?: boolean)
+```
+
+## executeCompare
+
+Feature: Compare two versions of document data and switch to trace mode to show content differences.
+
+Usage:
+
+```javascript
+instance.command.executeCompare(payload: IComparePayload)
+```
+
+## executeToggleRuler
+
+Feature: Toggle ruler visibility.
+
+Usage:
+
+```javascript
+instance.command.executeToggleRuler(payload?: boolean)
 ```
 
 ## executeCut
@@ -549,6 +580,26 @@ Usage:
 instance.command.executeTableSelectAll()
 ```
 
+## executeTableAutoFitToContent
+
+Feature: AutoFit the table to its contents (each column width is adjusted to the measured maximum content width of its cells, not less than defaultColMinWidth; when overflow is false the result is proportionally shrunk to fit the page content area)
+
+Usage:
+
+```javascript
+instance.command.executeTableAutoFitToContent()
+```
+
+## executeTableAutoFitToPage
+
+Feature: AutoFit the table to the window (the total table width is proportionally scaled to the page content area width)
+
+Usage:
+
+```javascript
+instance.command.executeTableAutoFitToPage()
+```
+
 ## executeImage
 
 Feature: Insert a picture
@@ -643,6 +694,7 @@ instance.command.executeAddWatermark({
   opacity?: number;
   size?: number;
   font?: string;
+  layer?: WatermarkLayer;
 })
 ```
 
@@ -703,7 +755,7 @@ Feature: Print
 Usage:
 
 ```javascript
-instance.command.executePrint()
+instance.command.executePrint(option?: IPrintOption)
 ```
 
 ## executeReplaceImageElement
@@ -826,6 +878,16 @@ Usage:
 instance.command.executeSetPaperMargin([top: number, right: number, bottom: number, left: number])
 ```
 
+## executeSetColumns
+
+Feature: Set the column configuration.
+
+Usage:
+
+```javascript
+instance.command.executeSetColumns(config: IColumnOption | null)
+```
+
 ## executeSetMainBadge
 
 Feature: Set main badge
@@ -894,16 +956,6 @@ Usage:
 
 ```javascript
 instance.command.executeSetValue(payload: Partial<IEditorData>, options?: ISetValueOption)
-```
-
-## executeRemoveControl
-
-Feature: Delete the control
-
-Usage:
-
-```javascript
-instance.command.executeRemoveControl(payload?: IRemoveControlOption)
 ```
 
 ## executeSetLocale
@@ -986,105 +1038,7 @@ Usage:
 instance.command.executeSetZone(zone: EditorZone)
 ```
 
-## executeSetControlValue
-
-Feature: Set control value
-
-Usage:
-
-```javascript
-instance.command.executeSetControlValue(payload: ISetControlValueOption)
-```
-
-## executeSetControlValueList
-
-Feature: Batch set control value
-
-Usage:
-
-```javascript
-instance.command.executeSetControlValueList(payload: ISetControlValueOption[])
-```
-
-## executeSetControlExtension
-
-Feature: Set control extension value
-
-Usage:
-
-```javascript
-instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
-```
-
-## executeSetControlExtensionList
-
-Feature: Batch set control extension value
-
-Usage:
-
-```javascript
-instance.command.executeSetControlExtensionList(payload: ISetControlExtensionOption[])
-```
-
-## executeSetControlProperties
-
-Feature: Set control properties
-
-Usage:
-
-```javascript
-instance.command.executeSetControlProperties(payload: ISetControlProperties)
-```
-
-## executeSetControlPropertiesList
-
-Feature: Batch set control properties
-
-Usage:
-
-```javascript
-instance.command.executeSetControlPropertiesList(payload: ISetControlProperties[])
-```
-
-## executeSetControlHighlight
-
-Feature: Set control highlight (by keyword)
-
-Usage:
-
-```javascript
-instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
-```
-
-## executeLocationControl
-
-Feature: Positioning and activating control
-
-Usage:
-
-```javascript
-instance.command.executeLocationControl(controlId: string, options?: ILocationControlOption)
-```
-
-## executeInsertControl
-
-Feature: Insert control
-
-Usage:
-
-```javascript
-instance.command.executeInsertControl(payload: IElement)
-```
-
-## executeJumpControl
-
-Feature: Jump to the next/previous control
-
-Usage:
-
-```javascript
-instance.command.executeJumpControl(payload?: { direction?: MoveDirection })
-```
+Control-related commands have moved to [Control-Commands](./control/command.md); validation commands to [Control-Validation](./control/validate.md).
 
 ## executeUpdateOptions
 

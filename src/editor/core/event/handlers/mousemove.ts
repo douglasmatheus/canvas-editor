@@ -5,6 +5,8 @@ import { CanvasEvent } from '../CanvasEvent'
 
 export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
+  // 留痕模式：hover 到带 trace 标记的元素时显示作者/时间浮窗
+  draw.getTraceParticle().handleMouseMove(evt)
   // 是否是拖拽文字
   if (host.isAllowDrag) {
     // 是否允许拖拽到选区
@@ -65,7 +67,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     trIndex,
     tableId,
     trId,
-    tdId
+    tdId,
+    tablePath
   } = positionResult
   const {
     index: startIndex,
@@ -80,6 +83,7 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   if (
     isTable &&
     startIsTable &&
+    startTableId === tableId &&
     (tdIndex !== startTdIndex || trIndex !== startTrIndex)
   ) {
     rangeManager.setRange(
@@ -98,7 +102,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
       tdIndex,
       tdId,
       trId,
-      tableId
+      tableId,
+      tablePath
     })
   } else {
     let end = ~endIndex ? endIndex : 0
@@ -107,7 +112,6 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     // 开始位置
     let start = startIndex
     if (start > end) {
-      // eslint-disable-next-line @typescript-eslint/no-extra-semi
       ;[start, end] = [end, start]
     }
     if (start === end) return

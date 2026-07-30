@@ -46,7 +46,6 @@ export function deepCloneOmitKeys<T, K>(obj: T, omitKeys: (keyof K)[]): T {
   if (Array.isArray(obj)) {
     newObj = obj.map(item => deepCloneOmitKeys(item, omitKeys)) as T
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(Object.keys(obj) as (keyof T)[]).forEach(key => {
       if (omitKeys.includes(key as unknown as keyof K)) return
       newObj[key] = deepCloneOmitKeys(obj[key], omitKeys)
@@ -66,7 +65,6 @@ export function deepClone<T>(obj: T): T {
   if (Array.isArray(obj)) {
     newObj = obj.map(item => deepClone(item)) as T
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(Object.keys(obj) as (keyof T)[]).forEach(key => {
       newObj[key] = deepClone(obj[key])
     })
@@ -195,6 +193,9 @@ export function mergeObject<T>(source: T, target: T): T {
   if (isObject(source) && isObject(target)) {
     const objectTarget = <Record<string, unknown>>target
     for (const [key, val] of Object.entries(source)) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        continue
+      }
       if (!objectTarget[key]) {
         objectTarget[key] = val
       } else {
@@ -373,6 +374,15 @@ export function isRectIntersect(
 
 export function isNonValue(value: unknown): boolean {
   return value === undefined || value === null
+}
+
+export function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = src
+  })
 }
 
 export function normalizeLineBreak(text: string): string {

@@ -34,7 +34,9 @@ export function hitCheckbox(element: IElement, draw: Draw) {
     const codes = control?.code ? control.code.split(',') : []
     if (checkbox?.value) {
       const codeIndex = codes.findIndex(c => c === checkbox.code)
-      codes.splice(codeIndex, 1)
+      if (~codeIndex) {
+        codes.splice(codeIndex, 1)
+      }
     } else {
       if (checkbox?.code) {
         codes.push(checkbox.code)
@@ -189,7 +191,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     }
   }
   // 标签点击事件
-    const eventBus = draw.getEventBus()
+  const eventBus = draw.getEventBus()
   if (isDirectHitLabel && eventBus.isSubscribe('labelMousedown')) {
     eventBus.emit('labelMousedown', {
       evt,

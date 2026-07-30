@@ -37,7 +37,6 @@ const {
 } = await instance.command.getValueAsync(options?: IGetValueOption)
 ```
 
-
 ## getImage
 
 Feature: Gets the base64 string of the current page image
@@ -181,6 +180,16 @@ const [top: number, right: number, bottom: number, left: number] =
   instance.command.getPaperMargin()
 ```
 
+## getColumns
+
+Feature: Get the current column configuration. Returns `null` when columns are disabled.
+
+Usage:
+
+```javascript
+const columns: IColumnOption | null = instance.command.getColumns()
+```
+
 ## getSearchNavigateInfo
 
 Feature: Get search navigation information
@@ -252,30 +261,7 @@ Usage:
 const groupIds = await instance.command.getGroupIds()
 ```
 
-## getControlValue
-
-Feature: Get control value
-
-Usage:
-
-```javascript
-const {
-  value: string | null
-  innerText: string | null
-  zone: EditorZone
-  elementList?: IElement[]
-} = await instance.command.getControlValue(payload: IGetControlValueOption)
-```
-
-## getControlList
-
-Feature: Get control list
-
-Usage:
-
-```javascript
-const controlList = await instance.command.getControlList()
-```
+Control-related commands have moved to [Control-Commands](./control/command.md).
 
 ## getContainer
 

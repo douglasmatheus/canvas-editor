@@ -20,12 +20,20 @@ import { defaultWatermarkOption } from '../dataset/constant/Watermark'
 import { defaultZoneOption } from '../dataset/constant/Zone'
 import { defaultLineNumberOption } from '../dataset/constant/LineNumber'
 import { defaultListOption } from '../dataset/constant/List'
+import { defaultMagnifierOption } from '../dataset/constant/Magnifier'
+import { defaultAccessibilityOption } from '../dataset/constant/Accessibility'
+import { IAccessibilityOption } from '../interface/Accessibility'
 import { IBackgroundOption } from '../interface/Background'
+import { defaultColumnOption } from '../dataset/constant/Column'
+import { IColumnOption } from '../interface/Column'
 import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
 import { IControlOption } from '../interface/Control'
 import { ICursorOption } from '../interface/Cursor'
 import { IEditorOption, IModeRule } from '../interface/Editor'
+import { ITraceOption } from '../interface/Trace'
+import { IRulerOption } from '../interface/Ruler'
+import { IMagnifierOption } from '../interface/Magnifier'
 import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
 import { IHeader } from '../interface/Header'
@@ -58,6 +66,8 @@ import { IGraffitiOption } from '../interface/Graffiti'
 import { defaultGraffitiOption } from '../dataset/constant/Graffiti'
 import { IWhiteSpaceOption } from '../interface/WhiteSpace'
 import { defaultWhiteSpaceOption } from '../dataset/constant/WhiteSpace'
+import { defaultTraceOption } from '../dataset/constant/Trace'
+import { defaultRulerOption } from '../dataset/constant/Ruler'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -162,6 +172,26 @@ export function mergeOption(
     ...defaultListOption,
     ...options.list
   }
+  const magnifierOptions: Required<IMagnifierOption> = {
+    ...defaultMagnifierOption,
+    ...options.magnifier
+  }
+  const accessibilityOptions: Required<IAccessibilityOption> = {
+    ...defaultAccessibilityOption,
+    ...options.accessibility
+  }
+  const columnOptions: Required<IColumnOption> = {
+    ...defaultColumnOption,
+    ...options.column
+  }
+  const traceOptions: Required<ITraceOption> = {
+    ...defaultTraceOption,
+    ...options.trace
+  }
+  const rulerOptions: Required<IRulerOption> = {
+    ...defaultRulerOption,
+    ...options.ruler
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -248,6 +278,11 @@ export function mergeOption(
     graffiti: graffitiOptions,
     label: labelOptions,
     imgCaption: imgCaptionOptions,
-    list: listOptions
+    list: listOptions,
+    magnifier: magnifierOptions,
+    accessibility: accessibilityOptions,
+    column: columnOptions,
+    trace: traceOptions,
+    ruler: rulerOptions
   }
 }

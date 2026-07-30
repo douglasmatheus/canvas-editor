@@ -1468,6 +1468,74 @@ window.onload = function () {
     })
   }
 
+  // 分栏配置
+  const columnConfigDom =
+    document.querySelector<HTMLDivElement>('.column-config')!
+  columnConfigDom.onclick = function () {
+    const current = instance.command.getColumns()
+    const count = current?.count ?? 1
+    const gap = current?.gap ?? 20
+    const separator = current?.separator ? 'true' : 'false'
+    new Dialog({
+      title: '分栏',
+      data: [
+        {
+          type: 'select',
+          label: '栏数',
+          name: 'count',
+          required: true,
+          value: `${count}`,
+          options: [
+            { value: '1', label: '1（关闭）' },
+            { value: '2', label: '2' },
+            { value: '3', label: '3' },
+            { value: '4', label: '4' },
+            { value: '5', label: '5' }
+          ]
+        },
+        {
+          type: 'text',
+          label: '栏间距',
+          name: 'gap',
+          required: true,
+          value: `${gap}`,
+          placeholder: '请输入栏间距（像素）'
+        },
+        {
+          type: 'select',
+          label: '分隔线',
+          name: 'separator',
+          required: true,
+          value: separator,
+          options: [
+            { value: 'false', label: '不显示' },
+            { value: 'true', label: '显示' }
+          ]
+        }
+      ],
+      onConfirm: payload => {
+        const countValue = payload.find(p => p.name === 'count')?.value
+        if (!countValue) return
+        const gapValue = payload.find(p => p.name === 'gap')?.value
+        if (!gapValue) return
+        const separatorValue = payload.find(p => p.name === 'separator')?.value
+        if (!separatorValue) return
+        instance.command.executeSetColumns({
+          count: Number(countValue),
+          gap: Number(gapValue),
+          separator: separatorValue === 'true'
+        })
+      }
+    })
+  }
+
+  // 标尺开关
+  const rulerToggleDom =
+    document.querySelector<HTMLDivElement>('.ruler-toggle')!
+  rulerToggleDom.onclick = function () {
+    instance.command.executeToggleRuler()
+  }
+
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
   fullscreenDom.onclick = toggleFullscreen
@@ -1490,7 +1558,6 @@ window.onload = function () {
   }
 
   // 7. 编辑器使用模式
-  let modeIndex = 0
   const modeList = [
     {
       mode: EditorMode.EDIT,
@@ -1519,18 +1586,47 @@ window.onload = function () {
     {
       mode: EditorMode.GRAFFITI,
       name: '涂鸦模式'
+    },
+    {
+      mode: EditorMode.TRACE,
+      name: '留痕模式'
     }
   ]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
-  modeElement.onclick = function () {
-    // 模式选择循环
-    modeIndex === modeList.length - 1 ? (modeIndex = 0) : modeIndex++
-    // 设置模式
-    const { name, mode } = modeList[modeIndex]
-    modeElement.innerText = name
+  const modeOptionsElement =
+    modeElement.querySelector<HTMLUListElement>('.options')!
+  const modeTextElement = modeElement.querySelector<HTMLSpanElement>('.text')!
+  const modeTextMap = modeList.reduce<Record<string, string>>((acc, item) => {
+    acc[item.mode] = item.name
+    return acc
+  }, {})
+  // 初始 active 与 .text 对齐当前模式
+  const currentMode = instance.command.getOptions().mode
+  modeTextElement.innerText =
+    modeTextMap[currentMode] || modeTextMap[EditorMode.EDIT]
+  modeOptionsElement.querySelectorAll<HTMLLIElement>('li').forEach(li => {
+    li.classList.toggle('active', li.dataset.mode === currentMode)
+  })
+
+  // 留痕记录开关（仅 "留痕模式" 行可见；留痕查看模式下禁用）
+  const traceToggleDom = document.querySelector<HTMLInputElement>(
+    '.trace-toggle__input'
+  )!
+  traceToggleDom.checked = !instance.command.getOptions().trace?.disabled
+  traceToggleDom.disabled = currentMode === EditorMode.TRACE
+  traceToggleDom.onchange = function () {
+    instance.command.executeToggleTrace(traceToggleDom.checked)
+  }
+
+  const applyMode = (mode: EditorMode) => {
+    modeTextElement.innerText = modeTextMap[mode]
     instance.command.executeMode(mode)
+    // 更新 active 高亮
+    modeOptionsElement.querySelectorAll<HTMLLIElement>('li').forEach(li => {
+      li.classList.toggle('active', li.dataset.mode === mode)
+    })
     // 设置菜单栏权限视觉反馈
-    const isReadonly = mode === EditorMode.READONLY
+    const isReadonly = mode === EditorMode.READONLY || mode === EditorMode.TRACE
     const enableMenuList = ['search', 'print']
     document.querySelectorAll<HTMLDivElement>('.menu-item>div').forEach(dom => {
       const menu = dom.dataset.menu
@@ -1538,6 +1634,23 @@ window.onload = function () {
         ? dom.classList.add('disable')
         : dom.classList.remove('disable')
     })
+    // 留痕查看模式禁止切回记录态
+    traceToggleDom.disabled = mode === EditorMode.TRACE
+  }
+  modeElement.onclick = function (evt) {
+    // 点击 li 时不重复 toggle 弹窗（交由 options 处理）
+    if ((evt.target as HTMLElement).tagName === 'LI') return
+    modeOptionsElement.classList.toggle('visible')
+  }
+  modeOptionsElement.onclick = function (evt) {
+    const target = evt.target as HTMLElement
+    if (target.closest('.trace-toggle')) return
+    const li = target.closest('li')
+    if (!li) return
+    const mode = li.dataset.mode as EditorMode
+    if (!modeTextMap[mode]) return
+    applyMode(mode)
+    modeOptionsElement.classList.remove('visible')
   }
 
   // 模拟批注
@@ -1852,6 +1965,12 @@ window.onload = function () {
   }
 
   // 9. 右键菜单注册
+  // 宏：从 localStorage 恢复已保存的宏
+  const MACRO_STORAGE_KEY = 'canvas-editor:macros'
+  const saved = localStorage.getItem(MACRO_STORAGE_KEY)
+  if (saved) {
+    instance.macro.importMacros(saved)
+  }
   instance.register.contextMenuList([
     {
       name: '批注',
@@ -1999,6 +2118,114 @@ window.onload = function () {
       callback: (command: Command) => {
         command.executeClearGraffiti()
       }
+    },
+    {
+      name: '宏',
+      when: payload => !payload.isReadonly,
+      childMenus: [
+        {
+          name: '录制宏',
+          icon: 'record',
+          when: () => !instance.macro.isRecording(),
+          callback: () => {
+            instance.macro.startRecording()
+          }
+        },
+        {
+          name: '停止录制宏',
+          icon: 'stop',
+          when: () => instance.macro.isRecording(),
+          callback: () => {
+            new Dialog({
+              title: '保存宏',
+              data: [
+                {
+                  type: 'text',
+                  label: '宏名称',
+                  name: 'name',
+                  required: true,
+                  placeholder: '请输入宏名称'
+                }
+              ],
+              onConfirm: payload => {
+                const name = payload.find(p => p.name === 'name')?.value
+                if (!name) return
+                const macro = instance.macro.stopRecording(name)
+                if (!macro) return
+                localStorage.setItem(
+                  MACRO_STORAGE_KEY,
+                  instance.macro.exportMacros()
+                )
+              },
+              onCancel: () => {
+                instance.macro.cancelRecording()
+              }
+            })
+          }
+        },
+        {
+          name: '回放宏',
+          when: () =>
+            !instance.macro.isRecording() &&
+            instance.macro.getMacros().length > 0,
+          callback: () => {
+            const macros = instance.macro.getMacros()
+            new Dialog({
+              title: '回放宏',
+              data: [
+                {
+                  type: 'select',
+                  label: '选择宏',
+                  name: 'macroId',
+                  required: true,
+                  options: macros.map(m => ({
+                    label: `${m.name} (${m.type})`,
+                    value: m.id
+                  }))
+                }
+              ],
+              onConfirm: async payload => {
+                const id = payload.find(p => p.name === 'macroId')?.value
+                if (!id) return
+                await instance.macro.play(id)
+              }
+            })
+          }
+        },
+        {
+          name: '管理宏',
+          when: () =>
+            !instance.macro.isRecording() &&
+            instance.macro.getMacros().length > 0,
+          callback: () => {
+            const macros = instance.macro.getMacros()
+            new Dialog({
+              title: '管理宏',
+              data: [
+                {
+                  type: 'select',
+                  label: '选择要删除的宏',
+                  name: 'macroId',
+                  options: macros.map(m => ({
+                    label: `${m.name} (${m.type})`,
+                    value: m.id
+                  }))
+                }
+              ],
+              onConfirm: payload => {
+                const id = payload.find(p => p.name === 'macroId')?.value
+                if (!id) return
+                if (instance.macro.removeMacro(id)) {
+                  localStorage.setItem(
+                    MACRO_STORAGE_KEY,
+                    instance.macro.exportMacros()
+                  )
+                }
+              }
+            })
+          }
+        }
+      ]
     }
   ])
 

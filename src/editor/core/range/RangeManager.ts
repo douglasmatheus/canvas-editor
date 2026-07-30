@@ -15,7 +15,7 @@ import {
   RangeRowArray,
   RangeRowMap
 } from '../../interface/Range'
-import { getAnchorElement } from '../../utils/element'
+import { getAnchorElement, isElementTraceDeleted } from '../../utils/element'
 import { Draw } from '../draw/Draw'
 import { EventBus } from '../event/eventbus/EventBus'
 import { HistoryManager } from '../history/HistoryManager'
@@ -460,6 +460,10 @@ export class RangeManager {
       }
     }
     control.destroyControl()
+    // 抛出选区变化事件
+    if (isChange && this.eventBus.isSubscribe('rangeChange')) {
+      this.eventBus.emit('rangeChange', this.range)
+    }
   }
 
   public replaceRange(range: IRange) {
@@ -716,6 +720,7 @@ export class RangeManager {
     const selection = this.getTextLikeSelection()
     if (!selection) return ''
     return selection
+      .filter(element => !isElementTraceDeleted(element))
       .map(s => s.value)
       .join('')
       .replace(new RegExp(ZERO, 'g'), '')
