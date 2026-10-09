@@ -1,3 +1,4 @@
+import { ZERO } from '../../../../dataset/constant/Common'
 import { CanvasEvent } from '../../CanvasEvent'
 
 // 删除光标后隐藏元素，跳过留痕删除元素（痕迹不可移除）
@@ -133,7 +134,28 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
           endIndex - startIndex
         )
       } else {
-        if (!elementList[index + 1]) return
+        const nextElement = elementList[index + 1]
+        if (!nextElement) return
+        if (nextElement.value === ZERO && !nextElement.listWrap) {
+          const { rowFlex, rowMargin } = elementList[index]
+          let end = index + 1
+          while (end < elementList.length) {
+            const element = elementList[end]
+            if (
+              end > index + 1 &&
+              ((element.value === ZERO && !element.listWrap) ||
+                element.listId !== nextElement.listId ||
+                element.titleId !== nextElement.titleId)
+            ) {
+              break
+            }
+            end++
+          }
+          draw.setElementProperty(elementList.slice(index + 1, end), {
+            rowFlex,
+            rowMargin
+          })
+        }
         draw.deleteElementList(elementList, index + 1, 1)
       }
       curIndex = isCollapsed ? index : startIndex

@@ -1,7 +1,6 @@
 import {
   cloneProperty,
   deepClone,
-  deepCloneOmitKeys,
   deleteProperty,
   getUUID,
   isArrayEqual,
@@ -20,6 +19,7 @@ import {
   EDITOR_ELEMENT_ZIP_ATTR,
   EDITOR_ROW_ATTR,
   EDITOR_TRACE_ATTR,
+  EDITOR_HINT_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -51,7 +51,6 @@ import { DeepRequired } from '../interface/Common'
 import { IControlSelect } from '../interface/Control'
 import { IEditorOption } from '../interface/Editor'
 import { IElement, ITraceRecord } from '../interface/Element'
-import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
 import { mergeOption } from './option'
@@ -160,6 +159,10 @@ export function formatElementList(
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
           value.title = el.title
+          // 标题容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           if (el.level) {
             value.titleId = titleId
             value.level = el.level
@@ -208,6 +211,10 @@ export function formatElementList(
           value.listType = value.listType || el.listType
           value.listStyle = value.listStyle || el.listStyle
           value.listLevel = listLevel
+          // 列表容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           elementList.splice(i, 0, value)
           i++
         }
@@ -242,6 +249,10 @@ export function formatElementList(
           value.areaId = el.areaId || areaId
           value.area = el.area
           value.areaIndex = v
+          // 区域容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           if (value.type === ElementType.TABLE) {
             const trList = value.trList!
             for (let r = 0; r < trList.length; r++) {
@@ -332,6 +343,10 @@ export function formatElementList(
           value.type = el.type
           value.url = el.url
           value.hyperlinkId = hyperlinkId
+          // 超链接容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           elementList.splice(i, 0, value)
           i++
         }
@@ -386,7 +401,8 @@ export function formatElementList(
       const controlContext = pickObject(el, [
         ...EDITOR_ELEMENT_CONTEXT_ATTR,
         ...EDITOR_ROW_ATTR,
-        ...EDITOR_TRACE_ATTR
+        ...EDITOR_TRACE_ATTR,
+        ...EDITOR_HINT_ATTR
       ])
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
@@ -1971,11 +1987,36 @@ export function getTextFromElementList(
   )
 }
 
+// 历史快照专用克隆：与 deepCloneOmitKeys(obj, ['metrics', 'style']) 语义一致，
+// 但标量字段直接赋值不再递归，仅深拷贝实际存在的嵌套可变结构
+function cloneOmitRenderKeys<T>(value: T): T {
+  if (!value || typeof value !== 'object') {
+    return value
+  }
+  if (Array.isArray(value)) {
+    const list = value as unknown[]
+    const clonedArray: unknown[] = new Array(list.length)
+    for (let i = 0; i < list.length; i++) {
+      clonedArray[i] = cloneOmitRenderKeys(list[i])
+    }
+    return clonedArray as T
+  }
+  const cloned: Record<string, unknown> = {}
+  for (const key in value) {
+    if (key === 'metrics' || key === 'style') continue
+    const item = (value as Record<string, unknown>)[key]
+    cloned[key] =
+      item && typeof item === 'object' ? cloneOmitRenderKeys(item) : item
+  }
+  return cloned as T
+}
+
 export function getSlimCloneElementList(elementList: IElement[]) {
-  return deepCloneOmitKeys<IElement[], IRowElement>(elementList, [
-    'metrics',
-    'style'
-  ])
+  const clonedList = new Array<IElement>(elementList.length)
+  for (let i = 0; i < elementList.length; i++) {
+    clonedList[i] = cloneOmitRenderKeys(elementList[i])
+  }
+  return clonedList
 }
 
 export function getIsBlockElement(element?: IElement) {

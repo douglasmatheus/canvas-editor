@@ -38,6 +38,17 @@ import { IMagnifierOption } from './Magnifier'
 import { IAccessibilityOption } from './Accessibility'
 import { ITraceOption } from './Trace'
 import { IRulerOption } from './Ruler'
+import { IHintOption } from './Hint'
+import type { ISpellcheckOption } from './Spellcheck'
+
+export interface ILabOption {
+  /**
+   * 行级增量行计算：编辑时仅从受影响行断点续算，区间外行复用。
+   * 复杂结构（表格/控件/浮动图/分栏/minWidth 控件占位等）自动退化全量。
+   * 默认：false
+   */
+  incrementalCompute?: boolean
+}
 
 export interface IEditorData {
   header?: IElement[]
@@ -70,6 +81,7 @@ export interface IEditorOption {
   searchMatchColor?: string
   searchNavigateMatchColor?: string
   searchMatchAlpha?: number
+  spellcheck?: ISpellcheckOption
   highlightAlpha?: number
   highlightMarginHeight?: number
   resizerColor?: string
@@ -91,6 +103,8 @@ export interface IEditorOption {
   scrollContainerSelector?: string
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
+  // 实验性功能（逐项默认关闭，未来可能调整或移除）
+  lab?: ILabOption
   table?: ITableOption
   header?: IHeader
   footer?: IFooter
@@ -122,6 +136,7 @@ export interface IEditorOption {
   column?: IColumnOption
   trace?: ITraceOption
   ruler?: IRulerOption
+  hint?: IHintOption
 }
 
 export interface IEditorResult {
