@@ -390,6 +390,26 @@ instance.command.executeRowFlex(rowFlex: RowFlex)
 instance.command.executeRowMargin(rowMargin: number)
 ```
 
+## executeSpacingBefore
+
+功能：段落段前间距
+
+用法：
+
+```javascript
+instance.command.executeSpacingBefore(spacingBefore: number)
+```
+
+## executeSpacingAfter
+
+功能：段落段后间距
+
+用法：
+
+```javascript
+instance.command.executeSpacingAfter(spacingAfter: number)
+```
+
 ## executeInsertTable
 
 功能：插入表格
@@ -548,6 +568,26 @@ instance.command.executeTableBorderColor(payload: string)
 
 ```javascript
 instance.command.executeTableTdBorderType(payload: TdBorder)
+```
+
+## executeTableTdBorderColor
+
+功能：表格单元格边框颜色（传空字符串恢复表格边框颜色）
+
+用法：
+
+```javascript
+instance.command.executeTableTdBorderColor(payload: string)
+```
+
+## executeTableTdBorderWidth
+
+功能：表格单元格边框宽度（传 0 恢复表格边框宽度）
+
+用法：
+
+```javascript
+instance.command.executeTableTdBorderWidth(payload: number)
 ```
 
 ## executeTableTdSlashType

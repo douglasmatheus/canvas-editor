@@ -699,7 +699,9 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
-        underline: !(this.range.getDefaultStyle()?.underline ?? enterElement?.underline)
+        underline: !(
+          this.range.getDefaultStyle()?.underline ?? enterElement?.underline
+        )
       })
       if (enterElement?.value === ZERO) {
         enterElement.underline = !enterElement.underline
@@ -737,7 +739,9 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
-        strikeout: !(this.range.getDefaultStyle()?.strikeout ?? enterElement.strikeout)
+        strikeout: !(
+          this.range.getDefaultStyle()?.strikeout ?? enterElement.strikeout
+        )
       })
       if (enterElement?.value === ZERO) {
         enterElement.strikeout = !enterElement.strikeout
@@ -981,6 +985,38 @@ export class CommandAdapt {
     this.draw.render({ curIndex, isSetCursor })
   }
 
+  public spacingBefore(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList) return
+    paragraphElementList.forEach(element => {
+      element.spacingBefore = payload
+    })
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public spacingAfter(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList) return
+    paragraphElementList.forEach(element => {
+      element.spacingAfter = payload
+    })
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
   public insertTable(row: number, col: number) {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
@@ -1077,6 +1113,18 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     this.tableOperate.tableTdBorderType(payload)
+  }
+
+  public tableTdBorderColor(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.tableTdBorderColor(payload)
+  }
+
+  public tableTdBorderWidth(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.tableTdBorderWidth(payload)
   }
 
   public tableTdSlashType(payload: TdSlash) {

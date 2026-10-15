@@ -46,6 +46,8 @@ interface IElement {
     JUSTIFY = 'justify'
   };
   rowMargin?: number;
+  spacingBefore?: number;
+  spacingAfter?: number;
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;
@@ -68,6 +70,8 @@ interface IElement {
       conceptId?: string;
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
+      borderColor?: string;
+      borderWidth?: number;
       borderTypes?: TdBorder[];
       slashTypes?: TdSlash[];
       value: IElement[];

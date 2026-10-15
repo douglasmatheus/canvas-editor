@@ -35,6 +35,8 @@ export class Command {
   public executeList: CommandAdapt['list']
   public executeRowFlex: CommandAdapt['rowFlex']
   public executeRowMargin: CommandAdapt['rowMargin']
+  public executeSpacingBefore: CommandAdapt['spacingBefore']
+  public executeSpacingAfter: CommandAdapt['spacingAfter']
   public executeInsertTable: CommandAdapt['insertTable']
   public executeInsertTableTopRow: CommandAdapt['insertTableTopRow']
   public executeInsertTableBottomRow: CommandAdapt['insertTableBottomRow']
@@ -51,6 +53,8 @@ export class Command {
   public executeTableBorderType: CommandAdapt['tableBorderType']
   public executeTableBorderColor: CommandAdapt['tableBorderColor']
   public executeTableTdBorderType: CommandAdapt['tableTdBorderType']
+  public executeTableTdBorderColor: CommandAdapt['tableTdBorderColor']
+  public executeTableTdBorderWidth: CommandAdapt['tableTdBorderWidth']
   public executeTableTdSlashType: CommandAdapt['tableTdSlashType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
   public executeTableAutoFitToContent: CommandAdapt['tableAutoFitToContent']
@@ -257,6 +261,14 @@ export class Command {
       'executeRowMargin',
       adapt.rowMargin.bind(adapt)
     )
+    this.executeSpacingBefore = this.wrap(
+      'executeSpacingBefore',
+      adapt.spacingBefore.bind(adapt)
+    )
+    this.executeSpacingAfter = this.wrap(
+      'executeSpacingAfter',
+      adapt.spacingAfter.bind(adapt)
+    )
     // 表格、图片上传、超链接、搜索、打印、图片操作
     this.executeInsertTable = this.wrap(
       'executeInsertTable',
@@ -321,6 +333,14 @@ export class Command {
     this.executeTableTdBorderType = this.wrap(
       'executeTableTdBorderType',
       adapt.tableTdBorderType.bind(adapt)
+    )
+    this.executeTableTdBorderColor = this.wrap(
+      'executeTableTdBorderColor',
+      adapt.tableTdBorderColor.bind(adapt)
+    )
+    this.executeTableTdBorderWidth = this.wrap(
+      'executeTableTdBorderWidth',
+      adapt.tableTdBorderWidth.bind(adapt)
     )
     this.executeTableTdSlashType = this.wrap(
       'executeTableTdSlashType',
