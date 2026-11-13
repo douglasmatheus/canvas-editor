@@ -37,6 +37,10 @@ export class Command {
   public executeRowMargin: CommandAdapt['rowMargin']
   public executeSpacingBefore: CommandAdapt['spacingBefore']
   public executeSpacingAfter: CommandAdapt['spacingAfter']
+  public executeIndentLeft: CommandAdapt['indentLeft']
+  public executeIndentRight: CommandAdapt['indentRight']
+  public executeIndentFirstLine: CommandAdapt['indentFirstLine']
+  public executeSetTabStops: CommandAdapt['setTabStops']
   public executeInsertTable: CommandAdapt['insertTable']
   public executeInsertTableTopRow: CommandAdapt['insertTableTopRow']
   public executeInsertTableBottomRow: CommandAdapt['insertTableBottomRow']
@@ -81,6 +85,7 @@ export class Command {
   public executeSetImageCaption: CommandAdapt['setImageCaption']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
   public executePageMode: CommandAdapt['pageMode']
+  public executePageLayout: CommandAdapt['pageLayout']
   public executeSetColumns: CommandAdapt['setColumns']
   public executePageScale: CommandAdapt['pageScale']
   public executePageScaleRecovery: CommandAdapt['pageScaleRecovery']
@@ -94,6 +99,10 @@ export class Command {
   public executeSetAreaBadge: CommandAdapt['setAreaBadge']
   public executeInsertElementList: CommandAdapt['insertElementList']
   public executeInsertArea: CommandAdapt['insertArea']
+  public executeInsertFootnote: CommandAdapt['insertFootnote']
+  public executeSetFootnoteValue: CommandAdapt['setFootnoteValue']
+  public executeLocationFootnote: CommandAdapt['locationFootnote']
+  public getFootnoteValue: CommandAdapt['getFootnoteValue']
   public executeSetAreaValue: CommandAdapt['setAreaValue']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
   public executeDeleteArea: CommandAdapt['deleteArea']
@@ -129,6 +138,7 @@ export class Command {
   public executeInsertControl: CommandAdapt['insertControl']
   public executeJumpControl: CommandAdapt['jumpControl']
   public executeUpdateOptions: CommandAdapt['updateOptions']
+  public executeSetBackend: CommandAdapt['setBackend']
   public executeInsertTitle: CommandAdapt['insertTitle']
   public executeFocus: CommandAdapt['focus']
   public executeComputeElementListHeight: CommandAdapt['computeElementListHeight']
@@ -146,6 +156,7 @@ export class Command {
   public getRemainingContentHeight: CommandAdapt['getRemainingContentHeight']
   public getRange: CommandAdapt['getRange']
   public getRangeText: CommandAdapt['getRangeText']
+  public getRangeRects: CommandAdapt['getRangeRects']
   public getRangeContext: CommandAdapt['getRangeContext']
   public getRangeRow: CommandAdapt['getRangeRow']
   public getRangeParagraph: CommandAdapt['getRangeParagraph']
@@ -268,6 +279,22 @@ export class Command {
     this.executeSpacingAfter = this.wrap(
       'executeSpacingAfter',
       adapt.spacingAfter.bind(adapt)
+    )
+    this.executeIndentLeft = this.wrap(
+      'executeIndentLeft',
+      adapt.indentLeft.bind(adapt)
+    )
+    this.executeIndentRight = this.wrap(
+      'executeIndentRight',
+      adapt.indentRight.bind(adapt)
+    )
+    this.executeIndentFirstLine = this.wrap(
+      'executeIndentFirstLine',
+      adapt.indentFirstLine.bind(adapt)
+    )
+    this.executeSetTabStops = this.wrap(
+      'executeSetTabStops',
+      adapt.setTabStops.bind(adapt)
     )
     // 表格、图片上传、超链接、搜索、打印、图片操作
     this.executeInsertTable = this.wrap(
@@ -435,6 +462,10 @@ export class Command {
       'executePageMode',
       adapt.pageMode.bind(adapt)
     )
+    this.executePageLayout = this.wrap(
+      'executePageLayout',
+      adapt.pageLayout.bind(adapt)
+    )
     this.executeSetColumns = this.wrap(
       'executeSetColumns',
       adapt.setColumns.bind(adapt)
@@ -485,6 +516,20 @@ export class Command {
     this.executeInsertArea = this.wrap(
       'executeInsertArea',
       adapt.insertArea.bind(adapt)
+    )
+    // 脚注
+    this.executeInsertFootnote = this.wrap(
+      'executeInsertFootnote',
+      adapt.insertFootnote.bind(adapt)
+    )
+    this.executeSetFootnoteValue = this.wrap(
+      'executeSetFootnoteValue',
+      adapt.setFootnoteValue.bind(adapt)
+    )
+    this.getFootnoteValue = adapt.getFootnoteValue.bind(adapt)
+    this.executeLocationFootnote = this.wrap(
+      'executeLocationFootnote',
+      adapt.locationFootnote.bind(adapt)
     )
     this.executeSetAreaValue = this.wrap(
       'executeSetAreaValue',
@@ -578,6 +623,10 @@ export class Command {
       'executeUpdateOptions',
       adapt.updateOptions.bind(adapt)
     )
+    this.executeSetBackend = this.wrap(
+      'executeSetBackend',
+      adapt.setBackend.bind(adapt)
+    )
     this.executeInsertTitle = this.wrap(
       'executeInsertTitle',
       adapt.insertTitle.bind(adapt)
@@ -600,6 +649,7 @@ export class Command {
     this.getRemainingContentHeight = adapt.getRemainingContentHeight.bind(adapt)
     this.getRange = adapt.getRange.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
+    this.getRangeRects = adapt.getRangeRects.bind(adapt)
     this.getRangeContext = adapt.getRangeContext.bind(adapt)
     this.getRangeRow = adapt.getRangeRow.bind(adapt)
     this.getRangeParagraph = adapt.getRangeParagraph.bind(adapt)

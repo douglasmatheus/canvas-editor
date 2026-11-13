@@ -1,5 +1,6 @@
 import { PaperDirection } from '../dataset/enum/Editor'
 import { RowFlex } from '../dataset/enum/Row'
+import { TabStopLeader } from '../dataset/enum/TabStop'
 import {
   IElement,
   IElementMetrics,
@@ -13,6 +14,10 @@ export type IRowElement = IElement & {
   metrics: IElementMetrics
   style: string
   left?: number
+  // 制表位前导符（布局期命中位点时写入，渲染 leader 填充消费）
+  tabLeader?: TabStopLeader
+  // 避头悬挂标点（不计入行宽）
+  hang?: boolean
 }
 
 export interface IRow {
@@ -30,6 +35,18 @@ export interface IRow {
   offsetY?: number
   // 段后间距（已计入height，绘制选区等视觉效果时需剔除）
   spacingAfter?: number
+  // 区域最小高度补高（已计入height，绘制选区等视觉效果时需剔除；
+  // 分页溢出时截断至页底，height为本页内部分）
+  areaPadding?: {
+    areaId: string
+    height: number
+  }
+  // 区域补高的跨页结转：位于区域后续行时已计入其offsetY（占位空间视觉上归属区域）；
+  // 位于区域末行自身时（区域在文档末尾）剩余补高以空白页延续
+  areaPaddingCarry?: {
+    areaId: string
+    height: number
+  }
   elementList: IRowElement[]
   isWidthNotEnough?: boolean
   rowIndex: number

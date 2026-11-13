@@ -48,6 +48,19 @@ interface IElement {
   rowMargin?: number;
   spacingBefore?: number;
   spacingAfter?: number;
+  // left indent
+  indentLeft?: number;
+  // right indent
+  indentRight?: number;
+  // first-line indent (negative for hanging indent)
+  indentFirstLine?: number;
+  // paragraph tab stops (relative to the left margin)
+  tabStops?: {
+    position: number;
+    type: TabStopType;
+    // leader: none | dot | hyphen | underline
+    leader?: TabStopLeader;
+  }[];
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;
@@ -108,6 +121,7 @@ interface IElement {
   // checkbox
   checkbox?: {
     value: boolean | null;
+    markType?: CheckboxMarkType;
   };
   // radio
   radio?: {
@@ -175,11 +189,13 @@ interface IElement {
   area?: {
     extension?: unknown;
     top?: number;
+    minHeight?: number;
     hide?: boolean;
     borderColor?: string;
     backgroundColor?: string;
     mode?: AreaMode;
     deletable?: boolean;
+    resizable?: boolean;
     placeholder?: IPlaceholder;
   };
   // label

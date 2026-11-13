@@ -88,7 +88,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="it"><b>对齐</b><span>左、中、右、两端、分散</span></div>
   <div class="it"><b>行间距</b><span>段落行间距(rowMargin)</span></div>
   <div class="it"><b>段落间距</b><span>段前距(spacingBefore)、段后距(spacingAfter)</span></div>
-  <div class="it"><b>缩进</b><span>首行缩进、Tab 缩进</span></div>
+  <div class="it"><b>缩进</b><span>左缩进、右缩进、首行/悬挂缩进、段首 Tab 逐级缩进（首行→整段）、Tab 悬挂对齐</span></div>
   <div class="it"><b>换行规则</b><span>break-all / break-word</span></div>
   <div class="it"><b>标题</b><span>H1 – H6、per-level 字号</span></div>
   <div class="it"><b>标题规则</b><span>deletable、disabled、conceptId 关联</span></div>
@@ -281,7 +281,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="it"><b>定位与取值</b><span>点击定位跳转、获取标题值</span></div>
 </div>
 
-## 页面设置 <Badge type="info" text="19" />
+## 页面设置 <Badge type="info" text="20" />
 
 页面级配置与文档外观。
 
@@ -296,6 +296,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
 
 <div class="feat">
   <div class="it"><b>分页 / 连页</b><span>paging / continuity 两种页面模式</span></div>
+  <div class="it"><b>单页 / 多页</b><span>按容器宽度同屏排列多页，默认单页</span></div>
   <div class="it"><b>页面缩放</b><span>放大、缩小、恢复原始比例</span></div>
   <div class="it"><b>页面边框</b><span>边框颜色、线宽、内边距</span></div>
   <div class="it"><b>纸张大小</b><span>自定义宽高</span></div>
@@ -387,7 +388,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
 ### 打印与导出
 
 <div class="feat">
-  <div class="it"><b>打印</b><span>基于 canvas 转图片打印、可配置像素比</span></div>
+  <div class="it"><b>打印</b><span>Canvas 位图打印（可配置像素比）、SVG 矢量打印</span></div>
   <div class="it"><b>图片导出</b><span>页面图片 base64</span></div>
   <div class="it"><b>HTML 导入导出</b><span>HTML 导入 / 导出</span></div>
   <div class="it"><b>纯文本导出</b><span>纯文本与数据序列化</span></div>
@@ -398,6 +399,9 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
 ### 性能
 
 <div class="feat">
+  <div class="it"><b>超大文档</b><span>支持超大文档的渲染和编辑，面向百页级复杂文档优化输入、撤销重做与缩放体验</span></div>
+  <div class="it"><b>增量排版与缓存复用</b><span>按编辑区域续算断行，复用未变化的行、页面位置与历史快照</span></div>
+  <div class="it"><b>按需渲染与缩放优化</b><span>可见页即时绘制、离屏页按需补绘，缩放复用断行并延迟离屏位图重建</span></div>
   <div class="it"><b>Web Worker</b><span>字数统计、目录生成、成组提取、异步取值 共 4 个</span></div>
   <div class="it"><b>渲染模式</b><span>极速模式(多字组合)、兼容模式(逐字渲染)</span></div>
 </div>

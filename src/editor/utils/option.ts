@@ -55,7 +55,9 @@ import { ILineNumberOption } from '../interface/LineNumber'
 import { IPageBorderOption } from '../interface/PageBorder'
 import { defaultPageBorderOption } from '../dataset/constant/PageBorder'
 import {
+  BackendType,
   EditorMode,
+  PageLayout,
   PageMode,
   PaperDirection,
   RenderMode,
@@ -72,6 +74,10 @@ import { defaultTraceOption } from '../dataset/constant/Trace'
 import { defaultRulerOption } from '../dataset/constant/Ruler'
 import { defaultSpellcheckOption } from '../dataset/constant/Spellcheck'
 import type { ISpellcheckOption } from '../interface/Spellcheck'
+import type { IParagraphDragOption } from '../interface/ParagraphDrag'
+import { defaultParagraphDragOption } from '../dataset/constant/ParagraphDrag'
+import { IFootnoteOption } from '../interface/Footnote'
+import { defaultFootnoteOption } from '../dataset/constant/Footnote'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -208,6 +214,14 @@ export function mergeOption(
     ...defaultSpellcheckOption,
     ...options.spellcheck
   }
+  const paragraphDragOptions: Required<IParagraphDragOption> = {
+    ...defaultParagraphDragOption,
+    ...options.paragraphDrag
+  }
+  const footnoteOptions: Required<IFootnoteOption> = {
+    ...defaultFootnoteOption,
+    ...options.footnote
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -255,12 +269,16 @@ export function mergeOption(
     marginIndicatorColor: '#BABABA',
     margins: [100, 120, 100, 120],
     pageMode: PageMode.PAGING,
+    pageLayout: PageLayout.SINGLE,
     renderMode: RenderMode.SPEED,
+    backend: BackendType.CANVAS,
     defaultHyperlinkColor: '#0000FF',
     paperDirection: PaperDirection.VERTICAL,
     inactiveAlpha: 0.6,
     historyMaxRecordCount: 100,
     wordBreak: WordBreak.BREAK_WORD,
+    hangPunctuation: false,
+    incrementalCompute: true,
     printPixelRatio: 3,
     maskMargin: [0, 0, 0, 0],
     letterClass: [LETTER_CLASS.ENGLISH],
@@ -302,6 +320,8 @@ export function mergeOption(
     trace: traceOptions,
     ruler: rulerOptions,
     hint: hintOptions,
-    spellcheck: spellcheckOptions
+    spellcheck: spellcheckOptions,
+    paragraphDrag: paragraphDragOptions,
+    footnote: footnoteOptions
   }
 }

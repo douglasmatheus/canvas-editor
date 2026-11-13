@@ -1,11 +1,13 @@
 import { IElement } from '../../../..'
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
+import { EditorMode } from '../../../../dataset/enum/Editor'
 import { TableOrder } from '../../../../dataset/enum/table/TableTool'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { Position } from '../../../position/Position'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
+import type { RenderPage } from '../../../render/RenderBackend'
 
 interface IAnchorMouseDown {
   evt: MouseEvent
@@ -33,7 +35,7 @@ export class TableTool {
   private readonly TABLE_SELECT_OFFSET = 20
 
   private draw: Draw
-  private canvas: HTMLCanvasElement
+  private canvas: RenderPage
   private options: DeepRequired<IEditorOption>
   private position: Position
   private range: RangeManager
@@ -106,6 +108,11 @@ export class TableTool {
     )
     if (!element || !position) {
       // 元素或位置失效时清理旧工具
+      this.dispose()
+      return
+    }
+    // 表单模式仅控件内可编辑、只读模式文档不可编辑：表格工具（含拖拽调宽、增删行列入口）不可用
+    if (this.draw.isReadonly() || this.draw.getMode() === EditorMode.FORM) {
       this.dispose()
       return
     }

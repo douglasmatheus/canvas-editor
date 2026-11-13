@@ -48,6 +48,19 @@ interface IElement {
   rowMargin?: number;
   spacingBefore?: number;
   spacingAfter?: number;
+  // 左缩进
+  indentLeft?: number;
+  // 右缩进
+  indentRight?: number;
+  // 首行缩进（负数为悬挂缩进）
+  indentFirstLine?: number;
+  // 段落制表位（距版心左缘）
+  tabStops?: {
+    position: number;
+    type: TabStopType;
+    // 前导符：none | dot | hyphen | underline
+    leader?: TabStopLeader;
+  }[];
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;
@@ -108,6 +121,7 @@ interface IElement {
   // 复选框
   checkbox?: {
     value: boolean | null;
+    markType?: CheckboxMarkType;
   };
   // 单选框
   radio?: {
@@ -175,11 +189,13 @@ interface IElement {
   area?: {
     extension?: unknown;
     top?: number;
+    minHeight?: number;
     hide?: boolean;
     borderColor?: string;
     backgroundColor?: string;
     mode?: AreaMode;
     deletable?: boolean;
+    resizable?: boolean;
     placeholder?: IPlaceholder;
   };
   // 标签

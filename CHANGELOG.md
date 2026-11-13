@@ -1,3 +1,97 @@
+# [1.2.0](https://github.com/Hufe921/canvas-editor/compare/v1.1.0...v1.2.0) (2026-11-13)
+
+
+### Bug Fixes
+
+* prevent browser extensions from blocking print ([7cfc3f4](https://github.com/Hufe921/canvas-editor/commit/7cfc3f4e36c85a5f236af08ac1a53895d1df448b))
+
+
+### Documentation
+
+* update collaboration branch link ([38ace63](https://github.com/Hufe921/canvas-editor/commit/38ace63810fb80f2525f6cc33b1b6c242b5b75b0))
+
+
+### Features
+
+* add footnote support #747 ([6042a14](https://github.com/Hufe921/canvas-editor/commit/6042a1411e14abb9de56ed6a263afaca2470443b)), closes [#747](https://github.com/Hufe921/canvas-editor/issues/747)
+* add getRangeRects command ([bda7144](https://github.com/Hufe921/canvas-editor/commit/bda7144d21f2f50cff2a03a1c0d1b9394e1bba66))
+* add optional multi-page layout #1270 ([bcb0ecc](https://github.com/Hufe921/canvas-editor/commit/bcb0ecc3ce2c075f6893752b99fa24c33acaad4c)), closes [#1270](https://github.com/Hufe921/canvas-editor/issues/1270)
+* add paragraph drag #621 ([8c3ac29](https://github.com/Hufe921/canvas-editor/commit/8c3ac2912793e1faa989ad2af64adc64f9d40389)), closes [#621](https://github.com/Hufe921/canvas-editor/issues/621)
+* prevent word splitting around surround images #1200 ([7c4e8e6](https://github.com/Hufe921/canvas-editor/commit/7c4e8e66323f08e40b697f50ef25b8476a39a267)), closes [#1200](https://github.com/Hufe921/canvas-editor/issues/1200)
+
+
+### Refactor
+
+* optimize large document rendering and editing ([1724daa](https://github.com/Hufe921/canvas-editor/commit/1724daad5c079d577e719bd1799f1f18651a0644))
+
+
+### Tests
+
+* chore: fix lint and test timeouts ([d2aaf57](https://github.com/Hufe921/canvas-editor/commit/d2aaf574528b58649ab084c51a9ac9c05dce54cc))
+
+
+
+# [1.1.0](https://github.com/Hufe921/canvas-editor/compare/v1.0.6...v1.1.0) (2026-11-06)
+
+
+### Bug Fixes
+
+* exclude trace-deleted titles from catalog #1510 ([84389f2](https://github.com/Hufe921/canvas-editor/commit/84389f2a1dc23360da17d5428727d3e72adc619f)), closes [#1510](https://github.com/Hufe921/canvas-editor/issues/1510)
+* hide table tool in form mode #1511 ([8b94772](https://github.com/Hufe921/canvas-editor/commit/8b9477218871353553d07ca2d4ee4a1f40f8f465)), closes [#1511](https://github.com/Hufe921/canvas-editor/issues/1511)
+* place contextmenu by available viewport space #1514 ([73ad2fa](https://github.com/Hufe921/canvas-editor/commit/73ad2fa86e3d64a888ae467ada29d80265174d72)), closes [#1514](https://github.com/Hufe921/canvas-editor/issues/1514)
+
+
+### Documentation
+
+* add pdf export notes ([09bdb1f](https://github.com/Hufe921/canvas-editor/commit/09bdb1f3e80a1bee28ff6a6717c17b052860e54b))
+* update README SVG render layer entry to built-in backend ([7cfb52e](https://github.com/Hufe921/canvas-editor/commit/7cfb52ed5ea87faa4a6e7a336e0c46caff142fa3))
+
+
+### Features
+
+* add line-end punctuation hanging option #692 ([68f1a41](https://github.com/Hufe921/canvas-editor/commit/68f1a41753a6ce093e59f1d6f0ad11733960154d)), closes [#692](https://github.com/Hufe921/canvas-editor/issues/692)
+* add paragraph indent and ruler indent markers #725 #1190 #1459 ([4be9e29](https://github.com/Hufe921/canvas-editor/commit/4be9e29228d980c41e57811c629d4965e54d1e62)), closes [#725](https://github.com/Hufe921/canvas-editor/issues/725) [#1190](https://github.com/Hufe921/canvas-editor/issues/1190) [#1459](https://github.com/Hufe921/canvas-editor/issues/1459)
+* add paragraph indent and tab hanging indent #725 #1190 ([948e6ac](https://github.com/Hufe921/canvas-editor/commit/948e6ac583f63efc48403e2a63a32456ee9c274c)), closes [#725](https://github.com/Hufe921/canvas-editor/issues/725) [#1190](https://github.com/Hufe921/canvas-editor/issues/1190)
+* add paragraph tab stops with leader and ruler marks #256 ([1865c9b](https://github.com/Hufe921/canvas-editor/commit/1865c9b063def06a36ba27151a781d4893fca076)), closes [#256](https://github.com/Hufe921/canvas-editor/issues/256)
+* add SVG rendering backend #374 ([cf51314](https://github.com/Hufe921/canvas-editor/commit/cf51314a5179a709b9ef9d13cea8041257d02cfb)), closes [#374](https://github.com/Hufe921/canvas-editor/issues/374)
+* promote incremental layout to stable and enable by default ([516f1a4](https://github.com/Hufe921/canvas-editor/commit/516f1a437f7fa6fcbb7a0f41d8f552ac0087a3a4))
+
+
+### Tests
+
+* stabilize canvas rendering regression tests ([9a1c3d8](https://github.com/Hufe921/canvas-editor/commit/9a1c3d807cdf4817329b8682d3b3d546b9956147))
+
+
+
+## [1.0.6](https://github.com/Hufe921/canvas-editor/compare/v1.0.5...v1.0.6) (2026-10-23)
+
+
+### Bug Fixes
+
+* exclude paragraph spacingAfter from row decorations #1498 ([1d7cd1a](https://github.com/Hufe921/canvas-editor/commit/1d7cd1a7742f3e8af1f67536a5157d03b2945de7)), closes [#1498](https://github.com/Hufe921/canvas-editor/issues/1498)
+* honor extraPickAttrs for table row and cell identities #1492 ([71aa099](https://github.com/Hufe921/canvas-editor/commit/71aa0996c2d4c827ec5d86d9acee80eb0a3f98a4)), closes [#1492](https://github.com/Hufe921/canvas-editor/issues/1492)
+* use 24-hour format for date control and parse value by dateFormat #1503 ([b598ce9](https://github.com/Hufe921/canvas-editor/commit/b598ce927572ed453b420e742a2f9f5bd38aa45b)), closes [#1503](https://github.com/Hufe921/canvas-editor/issues/1503)
+
+
+### Chores
+
+* add prepublishOnly script for release preparation ([ced4746](https://github.com/Hufe921/canvas-editor/commit/ced4746ba13c7f2d3bbad0644fdff5e842eba049))
+
+
+### Features
+
+* add area minimum height with resize handle #1051 ([75b4c14](https://github.com/Hufe921/canvas-editor/commit/75b4c14e7da589b46912abf4b14597e3d99026bb)), closes [#1051](https://github.com/Hufe921/canvas-editor/issues/1051)
+* add checkbox cross mark style #1501 ([a3b2a93](https://github.com/Hufe921/canvas-editor/commit/a3b2a93d321802e202cfba4ccbdd955a98d91761)), closes [#1501](https://github.com/Hufe921/canvas-editor/issues/1501)
+* add paragraph spacing #499 ([124bbcc](https://github.com/Hufe921/canvas-editor/commit/124bbcc5176ee91935cfef5ec2374aff5284cb3a)), closes [#499](https://github.com/Hufe921/canvas-editor/issues/499)
+* add table cell border color/width setting #1053 ([4a2bf92](https://github.com/Hufe921/canvas-editor/commit/4a2bf92cf676de9decc7713b63b0c6f20fb8aaac)), closes [#1053](https://github.com/Hufe921/canvas-editor/issues/1053)
+
+
+### Tests
+
+* trim multi-page diff test load for CI timeout ([e8d0be8](https://github.com/Hufe921/canvas-editor/commit/e8d0be8f4c7d23ef1056a35b0891a3bc1083db82))
+
+
+
 ## [1.0.5](https://github.com/Hufe921/canvas-editor/compare/v1.0.4...v1.0.5) (2026-10-11)
 
 

@@ -46,16 +46,19 @@ interface IEditorOption {
   marginIndicatorColor?: string // The margin indicator color. default: #BABABA
   margins?: IMargin // Page margins. default: [100, 120, 100, 120]
   pageMode?: PageMode // Paper mode: Linkage, Pagination. default: Pagination
+  pageLayout?: PageLayout // Page layout: single page or multiple pages (arranged to fit the container in pagination mode). default: Single
   renderMode?: RenderMode // Render mode: speed(multi words combination rendering), compatibility(word by word rendering:avoid environmental differences such as browse,fonts...). default: speed
+  backend?: BackendType // Rendering backend: CANVAS or SVG. default: CANVAS
   defaultHyperlinkColor?: string // Default hyperlink color. default: #0000FF
   table?: ITableOption // Table configuration
+  footnote?: IFootnoteOption // Footnote configuration
   header?: IHeader // Header configuration
   footer?: IFooter // Footer configuration
   pageNumber?: IPageNumber // Page number configuration
   paperDirection?: PaperDirection // Paper orientation: portrait, landscape
   inactiveAlpha?: number // When the body content is out of focus, transparency. default: 0.6
   historyMaxRecordCount?: number // History (undo redo) maximum number of records. default: 100; 0 disables snapshot allocation
-  printPixelRatio?: number // Print the pixel ratio (larger values are clearer, but larger sizes). default: 3
+  printPixelRatio?: number // Pixel ratio for Canvas bitmap printing (larger values are clearer, but larger sizes). default: 3
   maskMargin?: IMargin // Masking margins above the editor（for example: menu bar, bottom toolbar）。default: [0, 0, 0, 0]
   letterClass?: string[] // Alphabet class supported by typesetting. default: a-zA-Z. Built-in alternative alphabet class: LETTER_CLASS
   contextMenuDisableKeys?: string[] // Disable context menu keys. default: []
@@ -63,6 +66,8 @@ interface IEditorOption {
   scrollContainerSelector?: string // scroll container selector. default: document
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
+  hangPunctuation?: boolean // Punctuation hanging: line-end punctuation that does not fit the line width hangs at the line end without occupying the width. default: false
+  incrementalCompute?: boolean // Row-level incremental layout. default: true; false uses full computation
   lab?: ILabOption // Experimental features configuration
   watermark?: IWatermark // Watermark configuration
   control?: IControlOption // Control configuration
@@ -92,6 +97,7 @@ interface IEditorOption {
   trace?: ITraceOption // Trace configuration. default: disabled
   ruler?: IRulerOption // Ruler configuration. default: disabled
   hint?: IHintOption // Hover hint configuration. default: disabled
+  paragraphDrag?: IParagraphDragOption // Paragraph drag configuration. default: disabled
 }
 ```
 
@@ -101,7 +107,9 @@ See the [Lab](./lab.md) chapter for experimental features (`lab`).
 
 ```typescript
 interface ILabOption {
-  incrementalCompute?: boolean // Row-level incremental layout. default: false
+  // Row-level incremental layout. Original default: false
+  // @deprecated No effect as of 1.1.0; use top-level incrementalCompute
+  incrementalCompute?: boolean
 }
 ```
 
@@ -113,6 +121,18 @@ interface ITableOption {
   defaultTrMinHeight?: number // Default table row minimum height. default: 42
   defaultColMinWidth?: number // Default minimum width for table columns (applied if the overall width is sufficient, otherwise
   overflow?: boolean // Is it allowed for the table to exceed the main body. When false, the total table width is proportionally shrunk to fit the page content area during layout (column width is not less than defaultColMinWidth). Default: false
+}
+```
+
+## Footnote Configuration
+
+```typescript
+interface IFootnoteOption {
+  size?: number // Default footnote font size. default: 10
+  color?: string // Footnote number color. default: #000000
+  lineColor?: string // Separator color. default: #000000
+  lineWidth?: number // Separator width. default: 1
+  gap?: number // Gap between the separator and content. default: 6
 }
 ```
 
@@ -210,6 +230,7 @@ interface ICheckboxOption {
   checkFillStyle?: string // Fill style when checked
   checkStrokeStyle?: string // Border color when checked
   checkMarkColor?: string // Check mark color
+  markType?: CheckboxMarkType // Check mark style (check/cross). default: CHECK
   verticalAlign?: VerticalAlign // Vertical alignment. default: MIDDLE
 }
 ```
@@ -347,6 +368,15 @@ interface ILineNumberOption {
   disabled?: boolean // Whether to disable. default: false
   right?: number // Distance from the main text. default: 20
   type?: LineNumberType // Number type (renumber each page, consecutive numbering). default: continuity
+}
+```
+
+## Paragraph Drag Configuration
+
+```typescript
+interface IParagraphDragOption {
+  disabled?: boolean // Whether to disable. default: true
+  color?: string // Drag handle color. default: #BABABA
 }
 ```
 

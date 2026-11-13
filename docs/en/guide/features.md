@@ -88,7 +88,7 @@ Character-level and inline text capabilities.
   <div class="it"><b>Alignment</b><span>Left, center, right, justified, distributed</span></div>
   <div class="it"><b>Line spacing</b><span>Paragraph line spacing (rowMargin)</span></div>
   <div class="it"><b>Paragraph spacing</b><span>Spacing before (spacingBefore), spacing after (spacingAfter)</span></div>
-  <div class="it"><b>Indent</b><span>First-line indent, Tab indent</span></div>
+  <div class="it"><b>Indent</b><span>Left indent, right indent, first-line/hanging indent, Tab-at-paragraph-start indent (first line, then whole paragraph), tab hanging alignment</span></div>
   <div class="it"><b>Word break</b><span>break-all / break-word</span></div>
   <div class="it"><b>Heading</b><span>H1 – H6, per-level size</span></div>
   <div class="it"><b>Heading rules</b><span>deletable, disabled, conceptId linking</span></div>
@@ -281,7 +281,7 @@ Professional scenarios such as forms, automation, and collaboration.
   <div class="it"><b>Locate & value</b><span>Click to locate, get heading value</span></div>
 </div>
 
-## Page Setup <Badge type="info" text="19" />
+## Page Setup <Badge type="info" text="20" />
 
 Page-level configuration and document appearance.
 
@@ -296,6 +296,7 @@ Page-level configuration and document appearance.
 
 <div class="feat">
   <div class="it"><b>Paginate / continuous</b><span>paging / continuity page modes</span></div>
+  <div class="it"><b>Single / multiple pages</b><span>Arrange pages to fit the container width; single page by default</span></div>
   <div class="it"><b>Page zoom</b><span>Zoom in, out, reset</span></div>
   <div class="it"><b>Page border</b><span>Border color, line width, padding</span></div>
   <div class="it"><b>Paper size</b><span>Custom width / height</span></div>
@@ -387,7 +388,7 @@ Developer integration, extension mechanisms, and runtime capabilities.
 ### Print & Export
 
 <div class="feat">
-  <div class="it"><b>Print</b><span>Canvas-to-image printing, configurable pixel ratio</span></div>
+  <div class="it"><b>Print</b><span>Canvas bitmap printing with configurable pixel ratio, SVG vector printing</span></div>
   <div class="it"><b>Image export</b><span>Page image base64</span></div>
   <div class="it"><b>HTML import/export</b><span>HTML import / export</span></div>
   <div class="it"><b>Plain text export</b><span>Plain text and data serialization</span></div>
@@ -398,6 +399,9 @@ Developer integration, extension mechanisms, and runtime capabilities.
 ### Performance
 
 <div class="feat">
+  <div class="it"><b>Large documents</b><span>Render and edit very large documents, with responsive typing, undo/redo, and zooming optimized for complex documents spanning hundreds of pages</span></div>
+  <div class="it"><b>Incremental layout & cache reuse</b><span>Resume layout from edited regions and reuse unchanged rows, page positions, and history snapshots</span></div>
+  <div class="it"><b>On-demand rendering & zooming</b><span>Draw visible pages immediately, fill offscreen pages on demand, reuse line breaking during zoom, and defer offscreen bitmap resizing</span></div>
   <div class="it"><b>Web Worker</b><span>Word count, catalog generation, group extraction, async value — 4 in total</span></div>
   <div class="it"><b>Render modes</b><span>Fast mode (multi-char group), compatible mode (per-char render)</span></div>
 </div>

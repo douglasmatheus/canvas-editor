@@ -1,7 +1,7 @@
 import './assets/css/index.css'
 import { version } from '../../package.json'
 import { IEditorData, IEditorOption, IEditorResult } from './interface/Editor'
-import { IElement } from './interface/Element'
+import { IElement, ITabStop } from './interface/Element'
 import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
@@ -9,6 +9,7 @@ import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
 import {
   FlexDirection,
+  CheckboxMarkType,
   ImageDisplay,
   LocationPosition,
   SurroundPosition
@@ -22,9 +23,11 @@ import {
   IRegisterContextMenu
 } from './interface/contextmenu/ContextMenu'
 import {
+  BackendType,
   EditorComponent,
   EditorZone,
   EditorMode,
+  PageLayout,
   PageMode,
   PaperDirection,
   WordBreak,
@@ -50,6 +53,7 @@ import { TableBorder, TdBorder, TdSlash } from './dataset/enum/table/Table'
 import { MaxHeightRatio, NumberType } from './dataset/enum/Common'
 import { TitleLevel } from './dataset/enum/Title'
 import { ListStyle, ListType } from './dataset/enum/List'
+import { TabStopLeader, TabStopType } from './dataset/enum/TabStop'
 import { ICatalog, ICatalogItem } from './interface/Catalog'
 import { Plugin } from './core/plugin/Plugin'
 import { UsePlugin } from './interface/Plugin'
@@ -197,8 +201,10 @@ export {
   ElementType,
   ControlType,
   EditorComponent,
+  PageLayout,
   PageMode,
   RenderMode,
+  BackendType,
   ImageDisplay,
   Command,
   KeyMap,
@@ -213,6 +219,8 @@ export {
   TitleLevel,
   ListType,
   ListStyle,
+  TabStopType,
+  TabStopLeader,
   WordBreak,
   ControlIndentation,
   ControlComponent,
@@ -225,6 +233,7 @@ export {
   AreaMode,
   ControlState,
   FlexDirection,
+  CheckboxMarkType,
   WatermarkType,
   WatermarkLayer
 }
@@ -232,6 +241,7 @@ export {
 // 对外类型
 export type {
   IElement,
+  ITabStop,
   IEditorData,
   IEditorOption,
   IEditorResult,

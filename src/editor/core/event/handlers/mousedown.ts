@@ -1,5 +1,5 @@
 import { ImageDisplay } from '../../../dataset/enum/Common'
-import { EditorMode } from '../../../dataset/enum/Editor'
+import { EditorMode, EditorZone } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { MouseEventButton } from '../../../dataset/enum/Event'
 import { ControlComponent } from '../../../dataset/enum/Control'
@@ -10,6 +10,7 @@ import { isMod } from '../../../utils/hotkey'
 import { CheckboxControl } from '../../draw/control/checkbox/CheckboxControl'
 import { RadioControl } from '../../draw/control/radio/RadioControl'
 import { CanvasEvent } from '../CanvasEvent'
+import { getPagePointer } from '../pagePointer'
 import { IElement } from '../../../interface/Element'
 import { Draw } from '../../draw/Draw'
 
@@ -65,9 +66,42 @@ export function hitRadio(element: IElement, draw: Draw) {
 
 export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
+  const pointer = getPagePointer(evt, draw.getPageContainer())
+  if (!pointer) return
   let isReadonly = draw.isReadonly()
   const rangeManager = draw.getRange()
   const position = draw.getPosition()
+  if (evt.button === MouseEventButton.LEFT && !isReadonly) {
+    const block = draw
+      .getParagraphDragParticle()
+      .getHitParagraph(pointer.x, pointer.y, pointer.pageNo)
+    if (block) {
+      pointer.page.style.cursor = 'grabbing'
+      draw.setPageNo(pointer.pageNo)
+      draw.getZone().setZone(EditorZone.MAIN)
+      const elementList = draw.getOriginalMainElementList()
+      const endIndex = Math.min(block.endIndex, elementList.length - 1)
+      rangeManager.setRange(block.startIndex, endIndex)
+      position.setPositionContext({
+        isTable: false,
+        index: block.startIndex
+      })
+      position.setCursorPosition(
+        position.getOriginalMainPositionList()[block.startIndex]
+      )
+      host.isAllowSelection = false
+      if (!draw.isDisabled()) {
+        setRangeCache(host)
+        host.paragraphDrag = block
+      }
+      draw.render({
+        isCompute: false,
+        isSubmitHistory: false,
+        isSetCursor: false
+      })
+      return
+    }
+  }
   // 存在选区时忽略右键点击
   const range = rangeManager.getRange()
   if (
@@ -80,8 +114,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   if (!host.isAllowDrag) {
     if (!isReadonly && range.startIndex !== range.endIndex) {
       const isPointInRange = rangeManager.getIsPointInRange(
-        evt.offsetX,
-        evt.offsetY
+        pointer.x,
+        pointer.y
       )
       if (isPointInRange) {
         setRangeCache(host)
@@ -89,18 +123,13 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       }
     }
   }
-  const target = evt.target as HTMLDivElement
-  const pageIndex = target.dataset.index
-  // 设置pageNo
-  if (pageIndex) {
-    draw.setPageNo(Number(pageIndex))
-  }
+  draw.setPageNo(pointer.pageNo)
   host.isAllowSelection = true
   // 缓存旧上下文信息
   const oldPositionContext = deepClone(position.getPositionContext())
   const positionResult = position.adjustPositionContext({
-    x: evt.offsetX,
-    y: evt.offsetY
+    x: pointer.x,
+    y: pointer.y
   })
   if (!positionResult) return
   const {
@@ -111,6 +140,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     isImage,
     isLabel,
     isTable,
+    isFootnote,
+    footnoteValueIndex,
     tableId,
     trIndex,
     tdIndex,
@@ -118,16 +149,20 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     tdValueIndex,
     hitLineStartIndex
   } = positionResult
+  const curIndex = isFootnote
+    ? footnoteValueIndex!
+    : isTable
+      ? tdValueIndex!
+      : index
   // 记录选区开始位置
   host.mouseDownStartPosition = {
     ...positionResult,
-    index: isTable ? tdValueIndex! : index,
-    x: evt.offsetX,
-    y: evt.offsetY
+    index: curIndex,
+    x: pointer.x,
+    y: pointer.y
   }
   const elementList = draw.getElementList()
   const positionList = position.getPositionList()
-  const curIndex = isTable ? tdValueIndex! : index
   const curElement = elementList[curIndex]
   // 绘制
   const isDirectHitImage = !!(isDirectHit && isImage)
@@ -145,7 +180,13 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
         rangeManager.getRange()
       if (~oldStartIndex) {
         const newPositionContext = position.getPositionContext()
-        if (newPositionContext.tdId === oldPositionContext.tdId) {
+        const isFootnoteContext =
+          newPositionContext.isFootnote || oldPositionContext.isFootnote
+        const isSameContext = isFootnoteContext
+          ? newPositionContext.footnoteId === oldPositionContext.footnoteId &&
+            !!newPositionContext.isFootnote === !!oldPositionContext.isFootnote
+          : newPositionContext.tdId === oldPositionContext.tdId
+        if (isSameContext) {
           // 沿用原选区锚点：光标在选区结束位置时锚点为结束位置
           const oldCursorIndex = position.getCursorPosition()?.index
           const oldAnchorIndex =
@@ -271,6 +312,12 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   tableTool.dispose()
   if (isTable && !isReadonly && draw.getMode() !== EditorMode.FORM) {
     tableTool.render()
+  }
+  // 区域工具组件
+  const areaTool = draw.getAreaTool()
+  areaTool.dispose()
+  if (!isReadonly && draw.getMode() !== EditorMode.FORM) {
+    areaTool.render()
   }
   // 超链接
   const hyperlinkParticle = draw.getHyperlinkParticle()

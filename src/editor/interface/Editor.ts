@@ -1,5 +1,6 @@
 import {
   EditorMode,
+  PageLayout,
   PageMode,
   PaperDirection,
   RenderMode,
@@ -40,12 +41,17 @@ import { ITraceOption } from './Trace'
 import { IRulerOption } from './Ruler'
 import { IHintOption } from './Hint'
 import type { ISpellcheckOption } from './Spellcheck'
+import { IParagraphDragOption } from './ParagraphDrag'
+import { IFootnoteOption } from './Footnote'
+import { BackendType } from '../dataset/enum/Editor'
 
 export interface ILabOption {
   /**
    * 行级增量行计算：编辑时仅从受影响行断点续算，区间外行复用。
    * 复杂结构（表格/控件/浮动图/分栏/minWidth 控件占位等）自动退化全量。
    * 默认：false
+   * @deprecated 自 1.1.0 起不再生效，请使用
+   * IEditorOption.incrementalCompute，后续版本移除。
    */
   incrementalCompute?: boolean
 }
@@ -90,7 +96,10 @@ export interface IEditorOption {
   marginIndicatorColor?: string
   margins?: IMargin
   pageMode?: PageMode
+  // 页面视图布局：单页或按可用宽度自动排列多页。默认：单页
+  pageLayout?: PageLayout
   renderMode?: RenderMode
+  backend?: BackendType
   defaultHyperlinkColor?: string
   paperDirection?: PaperDirection
   inactiveAlpha?: number
@@ -103,6 +112,9 @@ export interface IEditorOption {
   scrollContainerSelector?: string
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
+  hangPunctuation?: boolean
+  // 行级增量行计算。默认：true；false 使用全量计算
+  incrementalCompute?: boolean
   // 实验性功能（逐项默认关闭，未来可能调整或移除）
   lab?: ILabOption
   table?: ITableOption
@@ -137,6 +149,8 @@ export interface IEditorOption {
   trace?: ITraceOption
   ruler?: IRulerOption
   hint?: IHintOption
+  paragraphDrag?: IParagraphDragOption
+  footnote?: IFootnoteOption
 }
 
 export interface IEditorResult {
@@ -161,6 +175,7 @@ export type IUpdateOption = Omit<
   | 'scale'
   | 'pageGap'
   | 'pageMode'
+  | 'pageLayout'
   | 'paperDirection'
   | 'historyMaxRecordCount'
   | 'scrollContainerSelector'

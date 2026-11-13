@@ -39,7 +39,7 @@ const {
 
 ## getImage
 
-功能：获取当前页面图片 base64 字符串
+功能：获取当前页面图片 base64 字符串。Canvas 后端返回 `data:image/png;base64`，SVG 后端返回 `data:image/svg+xml;base64`。`pixelRatio` 仅对 Canvas 有效；`snapDomFunction` 生成的内容块快照在 SVG 中以 `image` 节点叠加。
 
 用法：
 
@@ -117,6 +117,16 @@ const range = instance.command.getRange()
 
 ```javascript
 const rangeText = instance.command.getRangeText()
+```
+
+## getRangeRects
+
+功能：获取指定选区的渲染矩形。
+
+用法：
+
+```javascript
+const rangeRects = instance.command.getRangeRects(range: IRange)
 ```
 
 ## getRangeContext
@@ -366,4 +376,15 @@ const {
   startPageNo: number
   endPageNo: number
 } = instance.command.getAreaValue(options: IGetAreaValueOption)
+```
+
+## getFootnoteValue
+
+功能：根据脚注 ID 获取脚注正文数据。
+
+```js
+const {
+  id: string
+  value: IElement[]
+} | null = instance.command.getFootnoteValue(options: IGetFootnoteValueOption)
 ```
